@@ -1,6 +1,5 @@
 #pragma once
 #include "file-holder.h"
-using namespace std;
 
 class Tag : public FileHolder
 {
@@ -10,10 +9,10 @@ class Tag : public FileHolder
 protected:
     long long extremePositionOfFrame{endPosition};
 
-    virtual string getFrameId() = 0;
+    virtual std::string getFrameId() = 0;
 
 public:
-    explicit Tag(Binary & file);
+    explicit Tag(Binary &);
 
     static bool correctChar(char);
 

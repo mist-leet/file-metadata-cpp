@@ -1,83 +1,65 @@
 #include "file_contents.h"
-using namespace std;
+using std::vector;
+using std::string;
 
 FileContents::FileContents()
 {}
 
 FileContents::~FileContents() = default;
 
-bool FileContents::setDataAndCheckSrc(Binary &file, bool unsynch, ulong raw_data_size, ulong expected_crc)
-{
-    data = file.getBytes(unsynch,raw_data_size);
-    uint actual_size = data.size();
-    EasyPtr<uchar> unsigned_data(actual_size);
-    toUchar(data.constData(),unsigned_data.getPtr(),actual_size);
+bool FileContents::setDataAndCheckSrc(Binary &file, bool unsynch, ulong raw_data_size, ulong expected_crc) {
+    arr = file.getBytes(unsynch,raw_data_size);
+    ulong actual_size = size();
     ulong crc = crc32(0,nullptr,0);//инициализация crc
-    crc = crc32(crc,unsigned_data.constPtr(),actual_size);//могут быть ошибки
+    crc = crc32(crc,arr.data(),actual_size);//могут быть ошибки;
     return crc == expected_crc;
 }
 
-bool FileContents::decompressRawData(Binary &file, bool unsynch, ulong raw_data_size,  ulong expected_data_size)
-{
-    data = qUncompressWrapper(file.getBytes(unsynch,raw_data_size),expected_data_size);
-    return !data.isEmpty();
+char FileContents::ch(ulong &count) {
+    ++count;
+    return ch();
 }
 
-bool FileContents::decompressRawData(FileContents &other_storage, ulong raw_data_size, ulong expected_data_size)
-{
-    data = qUncompressWrapper(other_storage.shareData(raw_data_size),expected_data_size);
-    return !data.isEmpty();
+uchar FileContents::get(ulong &count) {
+    ++count;
+    return get();
 }
 
-QByteArray FileContents::shareData(ulong size)
-{
-    QByteArray arr;
+bool FileContents::decompressRawData(Binary &file, bool unsynch, ulong raw_data_size,  ulong expected_data_size) {
+    arr = uncompressWrapper(file.getBytes(unsynch,raw_data_size),expected_data_size);
+    return !arr.empty();
+}
+
+bool FileContents::decompressRawData(FileContents &other_storage, ulong raw_data_size, ulong expected_data_size) {
+    arr = uncompressWrapper(other_storage.shareData(raw_data_size),expected_data_size);
+    return !arr.empty();
+}
+
+std::vector<uchar> FileContents::shareData(ulong size) {
+    std::vector<uchar> newV;
+    newV.reserve(arr.size());
     for (ulong i = 0;i < size;++i)
-        arr.append(ch());
-    return arr;
+        newV.push_back(get());
+    return newV;
 }
 
-void FileContents::oneByteBack()
-{
-    --position;
-}
-
-bool FileContents::getChar(char * c)
-{
-    if (c)
-    {
-        if (position <= lastPos())
-        {
-            *c = data.at(position);
-            ++position;
-        }
-        else
-            *c = 0;
-    }
-    return c;
-}
-
-bool FileContents::skip()
-{
+bool FileContents::skip() {
     position = lastPos();
     return true;
 }
 
-ulong FileContents::pos() const
-{
+ulong FileContents::pos() const {
     return position;
 }
 
-void FileContents::seek(ulong new_position)
-{
+void FileContents::seek(ulong new_position) {
     if (new_position <= lastPos())
         position = new_position;
     else
         position = lastPos();
 }
 
-void FileContents::shift(long long offset)
-{
+void FileContents::shift(long long offset) {
     long long resulting_pos = position + offset;
     if (resulting_pos >= 0 && resulting_pos <= lastPos())
         position = resulting_pos;
@@ -90,115 +72,78 @@ void FileContents::shift(long long offset)
     }
 }
 
-FileContents::operator bool () const
-{
-    return !data.isEmpty();
+FileContents::operator bool () const {
+    return !arr.empty();
 }
 
-bool FileContents::end() const
-{
-    return position == data.size();
+bool FileContents::end() const {
+    return position == arr.size();
 }
 
-int FileContents::lastPos() const
-{
-    return data.size() - 1;
+ulong FileContents::lastPos() const {
+    return arr.size() - 1;
 }
 
-int FileContents::size() const
-{
-    return data.size();
+ulong FileContents::size() const {
+    return arr.size();
 }
 
-char FileContents::ch()
-{
-    return ::ch(getCharLambda);
+char FileContents::ch() {
+    return toChar(get());
 }
 
-uchar FileContents::get()
-{
-    return ::get(getCharLambda);
+uchar FileContents::get() {
+    if (position <= lastPos()) {
+        ++position;
+        return arr[position];
+    }
+    else
+        return 0;
 }
 
-ByteOrder FileContents::getBOM()
-{
-    return ::getBOM(getCharLambda,false,oneByteBackLambda);
-}
-
-QString FileContents::getIso8859Str()
-{
-    return ::getIso8859Str(getCharLambda,false,oneByteBackLambda,data.size() - position);
-}
-
-QString FileContents::getIso8859Str(const long long & len)
-{
-    return ::getIso8859Str(getCharLambda,false,oneByteBackLambda,len);
-}
-
-QString FileContents::getUtf16Str(ByteOrder bo)//не чекает BOM
-{
-    return ::getUtf16Str(getCharLambda,false,bo,oneByteBackLambda,data.size() - position);
-}
-
-QString FileContents::getUtf16Str(ByteOrder bo, const long long & len)//не чекает BOM
-{
-    return ::getUtf16Str(getCharLambda,false,bo,oneByteBackLambda,len);
-}
-
-QString FileContents::getUtf8Str()
-{
-    return ::getUtf8Str(getCharLambda,false,oneByteBackLambda,data.size() - position);
-}
-
-QString FileContents::getUtf8Str(const long long & len)
-{
-    return ::getUtf8Str(getCharLambda,false,oneByteBackLambda,len);
-}
-
-QString FileContents::getUcs2Str(ByteOrder bo)//не чекает BOM
-{
-    return ::getUcs2Str(getCharLambda,false,bo,oneByteBackLambda,data.size() - position);
-}
-
-QString FileContents::getUcs2Str(ByteOrder bo, const long long & len)//не чекает BOM
-{
-    return ::getUcs2Str(getCharLambda,false,bo,oneByteBackLambda,len);
-}
-
-QByteArray FileContents::getBinaryTillEnd()
-{
-    QByteArray arr;
+vector<uchar> FileContents::getBinaryTillEnd() {
+    vector<uchar> v{};
+    v.reserve(size() - position);
     while (!end())
-        arr.append(ch());
-    return arr;
+        v.push_back(get());
+    return v;
 }
 
-StringEncoding FileContents::getStringEncoding(TagVersion v)
-{
-    return ::getStringEncoding(getCharLambda, false, oneByteBackLambda, v);
+QString FileContents::getEncodingDependentString(TagVersion v) {
+    return extr::getEncodingDependentString(getLambda, size() - position, v);
 }
 
-QString FileContents::getEncodingDependentString(TagVersion v)
-{
-    return ::getEncodingDependentString(getCharLambda, false, oneByteBackLambda, data.size() - position,
-                                           getStringEncoding(v));
+QString FileContents::getEncodingDependentString(TagVersion v, ulong len) {
+    return extr::getEncodingDependentString(getLambda, len, v);
 }
 
-QString FileContents::getEncodingDependentString(TagVersion v, const long long &len)
-{
-    return ::getEncodingDependentString(getCharLambda, false, oneByteBackLambda, len,
-                                           getStringEncoding(v));
+QString FileContents::getUrl() {
+    return extr::getUrl(getLambda, size() - position);
 }
 
-string FileContents::getSymbols(int amount)
-{
+QString FileContents::getUrl(ulong len) {
+    return extr::getUrl(getLambda, len);
+}
+
+ulong FileContents::get32Bit(ulong &count) {
+    return extr::get32Bit(getLambda, count);
+}
+
+std::pair<uint, uint> FileContents::getNumericPair(ulong len, uchar separator) {
+    return extr::getNumericPair(getLambda, len, separator);
+}
+
+QList<QString> FileContents::getList(ulong len, TagVersion v, QChar separator) {
+    return extr::getList(getLambda, len, v, separator);
+}
+
+string FileContents::getSymbols(int amount) {
     string str;
     for (int i = 0;i < amount;++i)
         str += ch();
     return str;
 }
 
-string FileContents::getFrame34Id()
-{
+string FileContents::getFrame34Id() {
     return getSymbols(4);
 }

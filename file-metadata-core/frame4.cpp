@@ -1,8 +1,7 @@
 #include "frame4.h"
-using namespace std;
 
 Frame4::Frame4(Binary::V24 &t)
-    : Frame34(t)
+    : Frame34(t.getFile(), t.getUnsynch())
     , tag(t)
 {
     synchsafeHeader = true;
@@ -15,30 +14,16 @@ Frame4::Frame4(Binary::V24 &t)
 
 Frame4::~Frame4() = default;
 
-bool Frame4::isGroupOrEncrMark(uchar c)
-{
-    return c >= 128 && c <= 240;
-}
-
-uchar Frame4::getGroupMark() const
-{
-    uchar mark = getb();
-    if (Frame4::isGroupOrEncrMark(mark))
-        return mark;
-    else
-        return 0;
-}
-
-bool Frame4::parseHeader()
-{//функция начинает работу после frame ID
-    if (!setLength([this](int &count)
-                    {
-                        return this->get(count);
-                    }).second)
+bool Frame4::parseHeader() {
+    qDebug() << "Frame4: starting to parse header\n";
+    if (!setLength([this] {
+                        return this->get();
+                         })) {
+        qDebug() << "Frame4: failed to parse header because of failing to set length\n";
         return false;
+    }
 
     dataLength = length;
-
     endPosition = startPosition + 10 + length;
 
     mByte status = getb();//неопределённые флаги могут быть выставлены, это не ошибка
@@ -48,47 +33,36 @@ bool Frame4::parseHeader()
     frameStatus.readOnly = status.test(4);
 
     mByte format = get();//неопределённые флаги не должны быть выставлены
-    if (format.test(7) || format.test(5) || format.test(4))
+    if (format.test(7) || format.test(5) || format.test(4)) {
+        qDebug() << "Frame4: failed to parse header because of undefined flags being set\n";
         return false;
-
-    int extra_data_size = 0;
-
-    frameFormat.groupIdPresence = format.test(6);
-    if (frameFormat.groupIdPresence)
-    {
-        uchar mark = get(extra_data_size);
-        if (Frame4::isGroupOrEncrMark(mark))
-            frameFormat.groupId = mark;
-        else
-            frameFormat.groupIdPresence = false;
     }
 
-    if (format.test(3))
-    {
-        if (format.test(0))
-            frameFormat.compressionInfo.second = true;
-        else
-            return false;
+    ulong extra_data_size = 0;
+
+    if (format.test(6))//group ID вообще не интересует
+        get();
+
+    bool compressionPresence = format.test(3);
+    bool uncompressedSizePresence = format.test(0);
+    if (compressionPresence && !uncompressedSizePresence) {
+        qDebug() << "Frame4: failed to parse header: can't uncompress frame\n";
+        return false;
     }
 
-    frameFormat.encryption = format.test(2);
-    if (frameFormat.encryption)
-    {
-        uchar mark = get(extra_data_size);
-        if (Frame4::isGroupOrEncrMark(mark))
-            frameFormat.encryptionMethodMarker = mark;
-        else
-            frameFormat.encryption = false;
+    bool encryption = format.test(2);
+    if (encryption) {
+        qDebug() << "Frame4: frame is encrypted and thus unreadable\n";
+        get();
+        unreadable = true;
     }
 
     unsynch = format.test(1);
 
-    if (frameFormat.compressionInfo.second || format.test(0))
-    {
+    if (compressionPresence || uncompressedSizePresence) {
         bool correct = true;
         unsigned char buf[4];
-        for (int i = 3;i >= 0;--i)
-        {
+        for (int i = 3;i >= 0;--i) {
             buf[i] = get(extra_data_size);
             if (buf[i]  > 127)
                 correct = false;//raw data size хранится в synchsafe int
@@ -96,40 +70,43 @@ bool Frame4::parseHeader()
 
         if (correct)
             for (int i = 3;i >= 0;--i)
-                frameFormat.compressionInfo.first += static_cast<unsigned long>(buf[i])*power(128,i);
+                uncompressedSize += static_cast<unsigned long>(buf[i])*power(128,i);
     }
 
     dataLength -= extra_data_size;
 
+    qDebug() << "Frame4: successfully parsed header, length is" << length << ::end;
     return true;
 }
 
-bool Frame4::tagHasContent() const
-{
+bool Frame4::tagHasContent() const {
     return tag.hasPreextractedData();
 }
 
-FileContents & Frame4::tagsContent() const
-{
+FileContents & Frame4::tagsContent() const {
     return tag.getContent();
 }
 
-QString Frame4::getEncodingDependentString(FileContents &c) const
-{
+QString Frame4::getEncodingDependentStringFromContents(FileContents &c) const {
     return c.getEncodingDependentString(four);
 }
 
-QString Frame4::getEncodingDependentString(FileContents &c, const long long &dur) const
-{
-    return c.getEncodingDependentString(four, dur);
+QString Frame4::getEncodingDependentStringFromContents(FileContents &c, ulong len) const {
+    return c.getEncodingDependentString(four, len);
 }
 
-QString Frame4::getEncodingDependentString(bool) const//фиктивный аргумент
-{
+QString Frame4::getEncodingDependentStringFileHolder() const {
     return FileHolder::getEncodingDependentString(four);
 }
 
-QString Frame4::getEncodingDependentString(bool, const long long &dur) const//фиктивный аргумент
-{
-    return FileHolder::getEncodingDependentString(four, dur);
+QString Frame4::getEncodingDependentStringFileHolder(ulong len) const {
+    return FileHolder::getEncodingDependentString(four, len);
+}
+
+QList<QString> Frame4::__getList(ulong len, QChar separator) const {
+    return FileHolder::getList(len, four, separator);
+}
+
+QList<QString> Frame4::__getList(FileContents &fc, ulong len, QChar separator) const {
+    return fc.getList(len, four, separator);
 }

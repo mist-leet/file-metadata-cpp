@@ -1,6 +1,4 @@
 #include "v22.h"
-#include "frames2.h"
-using namespace std;
 
 Binary::V22::V22(Binary & f) :
     Tag(f)
@@ -12,10 +10,9 @@ bool Binary::V22::parseHeader()
 {
     mByte flags = get();
     unsynch = flags.test(7);
-    bool correctness = setLength([this](int &count)
-                                    {
-                                        return this->FileHolder::get(count);
-                                    }).second;
+    bool correctness = setLength([this] {
+                                        return this->FileHolder::get();
+                                    });
     endPosition = startPosition + 10 + length;
     extremePositionOfFrame = endPosition - 7;
     if (correctness)
@@ -23,7 +20,7 @@ bool Binary::V22::parseHeader()
     return correctness;
 }
 
-string Binary::V22::getFrameId()
+std::string Binary::V22::getFrameId()
 {
     return getSymbols(3);
 }
@@ -64,12 +61,12 @@ bool Binary::V22::parseData()
 {
     while (pos() <= extremePositionOfFrame)
     {
-        string frame_id = getFrameId();
-        Parser frame(frame_id.c_str(), *this);
+        std::string frame_id = getFrameId();
+        FrameParser frame(frame_id.c_str(), *this);
         if (frame.parse() == noId)
             shift(-2);
     }
-    if (!end())//на всякий случай
+    if (!end())
         skip();
     return true;
 }

@@ -1,29 +1,18 @@
 #pragma once
 #include "binary.h"
-#include "easy_ptr.h"
-using namespace std;
 
 class FileContents
 {
-    void oneByteBack();
-
 protected:
-    QByteArray data{};
+    std::vector<uchar> arr{};
     ulong position{0};
 
-    function<bool(char *)> getCharLambda{
-                                            [this](char *c)
-                                            {
-                                                return this->getChar(c);
-                                            }
-                                        };
-
-    function<void()> oneByteBackLambda{
-                                            [this]()
-                                            {
-                                                return this->oneByteBack();
-                                            }
-                                      };
+    std::function<uchar()> getLambda{
+        [this]()
+        {
+            return this->get();
+        }
+    };
 
 public:
     FileContents();
@@ -34,47 +23,28 @@ public:
 
     bool decompressRawData(FileContents &other_storage, ulong raw_data_size, ulong expected_data_size);//tag -> frame
 
-    QByteArray shareData(ulong size);
+    std::vector<uchar> shareData(ulong size);
 
-    bool getChar(char *);
-
-    /*---<элементарные функции>---*/
     char ch();
-
+    char ch(ulong &);
     uchar get();
+    uchar get(ulong &);
 
-    template<typename T>
-    char ch(T &);
-
-    template<typename T>
-    uchar get(T &);
-    /*---</элементарные функции>---*/
-
-    ByteOrder getBOM();
-
-    QString getIso8859Str();
-
-    QString getIso8859Str(const long long &);
-
-    QString getUtf16Str(ByteOrder);//не чекает BOM
-
-    QString getUtf16Str(ByteOrder, const long long &);//не чекает BOM
-
-    QString getUtf8Str();
-
-    QString getUtf8Str(const long long &);
-
-    QString getUcs2Str(ByteOrder);//не чекает BOM
-
-    QString getUcs2Str(ByteOrder, const long long &);//не чекает BOM
-
-    QByteArray getBinaryTillEnd();
-
-    StringEncoding getStringEncoding(TagVersion);
+    std::vector<uchar> getBinaryTillEnd();
 
     QString getEncodingDependentString(TagVersion);
 
-    QString getEncodingDependentString(TagVersion, const long long &);
+    QString getEncodingDependentString(TagVersion, ulong);
+
+    QString getUrl();
+
+    QString getUrl(ulong);
+
+    ulong get32Bit(ulong &count);
+
+    std::pair<uint, uint> getNumericPair(ulong len, uchar separator);
+
+    QList<QString> getList(ulong len, TagVersion v, QChar separator);
 
     bool skip();
 
@@ -86,29 +56,15 @@ public:
 
     bool end() const;
 
-    int lastPos() const;
+    ulong lastPos() const;
 
-    int size() const;
+    ulong size() const;
 
-    string getSymbols(int);
+    std::string getSymbols(int);
 
-    string getFrame34Id();
+    std::string getFrame34Id();
 
     operator bool () const;
 
     virtual ~FileContents();
 };
-
-template<typename T>
-char FileContents::ch(T &count)
-{
-    return ::ch(getCharLambda
-                , count);
-}
-
-template<typename T>
-uchar FileContents::get(T &count)
-{
-    return ::get(getCharLambda
-                 , count);
-}

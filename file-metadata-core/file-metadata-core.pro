@@ -1,7 +1,9 @@
-QT -= gui
+QT += core gui
 
-CONFIG += c++11 console
-CONFIG -= app_bundle
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+TARGET = file-metadata-core
+TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -13,6 +15,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+CONFIG += c++11
 CONFIG += precompile_header
 PRECOMPILED_HEADER = pch.h
 
@@ -27,21 +30,11 @@ HEADERS += \
     frame2.h \
     frame3.h \
     frame4.h \
-    frames2.h \
-    frames3.h \
     file-holder.h \
     tag.h \
     frame.h \
     tag34.h \
-    frames4RP.h \
-    frames4SA.h \
-    frames4UEM.h \
-    frames4GCLO.h \
-    frames4text.h \
-    frames4url.h \
     frame_34.h \
-    parser.h \
-    frames4unknown.h \
     easy_ptr.h \
     frame_structs.h \
     tag_structs.h \
@@ -60,7 +53,6 @@ SOURCES += \
     frame2.cpp \
     frame3.cpp \
     frame4.cpp \
-    garbage.cpp \
     frames2.cpp \
     frames3.cpp \
     file-holder.cpp \
@@ -74,15 +66,21 @@ SOURCES += \
     frames4text.cpp \
     frames4url.cpp \
     frame_34.cpp \
-    parser.cpp \
     frames4unknown.cpp \
     file_contents.cpp \
     char_conversions.cpp \
     file_structs.cpp \
-    char_extracting.cpp \
-    monsterous_functions.cpp
+    monsterous_functions.cpp \
+    new_char_extracting.cpp \
+    tagparser.cpp \
+    frameparser.cpp \
+    widget1.cpp
+
+FORMS += \
+    widget1.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+

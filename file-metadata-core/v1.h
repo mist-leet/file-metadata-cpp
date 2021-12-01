@@ -1,6 +1,5 @@
 #pragma once
-#include "tag.h"
-using namespace std;
+#include "file-holder.h"
 
 class Binary::V1 : public FileHolder
 {

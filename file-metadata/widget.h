@@ -1,6 +1,6 @@
 #pragma once
-#include <QWidget>
-#include <QDropEvent>
+#include "pch.h"
+
 namespace Ui {
 class Widget;
 }
@@ -11,7 +11,10 @@ class Widget : public QWidget
 
 public:
     explicit Widget(QWidget *parent = nullptr);
-    ~Widget();
+
+    virtual void dragEnterEvent(QDragEnterEvent *) override;
+
+    virtual ~Widget() override;
 
 private:
     Ui::Widget *ui;

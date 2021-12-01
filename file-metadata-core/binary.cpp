@@ -1,10 +1,10 @@
-#include "v24.h"
-#include "v1.h"
-using namespace std;
+#include "binary.h"
+#include "tagparser.h"
 
 Binary::Binary(const QString &path)
     : QFile(path)
 {
+    qDebug() << "Binary: constructing\n";
     successfullyOpened = QFile::open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
     if (successfullyOpened)
         seek(0);
@@ -14,13 +14,11 @@ Binary::Binary()
     : QFile()
 {}
 
-Binary::~Binary()
-{
+Binary::~Binary() {
     close();
 }
 
-bool Binary::openf(const QString &path)
-{
+bool Binary::openf(const QString &path) {
     setFileName(path);
     successfullyOpened = QFile::open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
     if (successfullyOpened)
@@ -28,8 +26,27 @@ bool Binary::openf(const QString &path)
     return successfullyOpened;
 }
 
-Binary::operator bool() const
-{
+char Binary::ch(ulong &count) {
+    return extr::ch([this](char *c) {
+                            return this->getChar(c);
+                        }, count);
+}
+
+char Binary::uch(ulong &count, bool unsynch) {
+    return extr::getUns(chLambda, unsynch, backLambda, count);
+}
+
+uchar Binary::get(ulong &count) {
+    return extr::get([this](char *c) {
+                            return this->getChar(c);
+                        }, count);
+}
+
+uchar Binary::getb(ulong &count, bool unsynch) {
+    return extr::getUns(getLambda, unsynch, backLambda, count);
+}
+
+Binary::operator bool() const {
     return successfullyOpened;
 }
 
@@ -51,29 +68,24 @@ Binary & Binary::operator >> (char & c)
     return *this;
 }
 
-const FileMetadata & Binary::getData() const
-{
+const FileMetadata & Binary::getData() const {
     return data;
 }
 
-FileMetadata & Binary::getData()
-{
+FileMetadata & Binary::getData() {
     return data;
 }
 
-bool Binary::hasInfo() const
-{
+bool Binary::hasInfo() const {
     return data.hasInfo();
 }
 
-void Binary::shift(long long offset)
-{
+void Binary::shift(long long offset) {
     long long destination = pos() + offset;
 
     if (destination >=0 || destination < size())
         seek(destination);
-    else
-    {
+    else {
         if (destination < 0)
             seek(0);
         else
@@ -81,17 +93,18 @@ void Binary::shift(long long offset)
     }
 }
 
-void Binary::oneByteBack()
-{
+void Binary::oneByteBack() {
     seek(pos() - 1);
 }
 
-QByteArray Binary::getBytes(bool unsynch, ulong amount)
-{
-    return ::getBytes(getCharLambda
-                           , unsynch
-                           , oneByteBackLambda
-                           , amount);
+void Binary::seekForStartOfFooter() {
+    qDebug() << "Binary: seeking for start of the first footer" << end;
+    backFromEnd(v1Len);//перемещаемся на место предполагаемого тега v1
+
+    if (checkFor3Char("TAG"))
+        backFromEnd(v1Len + headerLen);
+    else
+        backFromEnd(headerLen);
 }
 
 QByteArray Binary::get_bytes(bool unsynch, ulong amount)
@@ -102,152 +115,125 @@ QByteArray Binary::get_bytes(bool unsynch, ulong amount)
                         , amount);
 }
 
-char Binary::ch()
-{
-    return ::ch(getCharLambda);
+std::vector<uchar> Binary::getBytes(bool unsynch, ulong amount) {
+    return extr::vGetBytes(getLambda, unsynch, backLambda, amount);
 }
 
-uchar Binary::get()
-{
-    return ::get(getCharLambda);
+char Binary::ch() {
+    return extr::ch([this](char *c) {
+        return this->getChar(c);
+    });
 }
 
-char Binary::uch(bool unsynch)
-{
-    return ::uch(getCharLambda
-                 , unsynch
-                 , oneByteBackLambda);
+char Binary::uch(bool unsynch) {
+    return extr::getUns(chLambda, unsynch, backLambda);
 }
 
-uchar Binary::getb(bool unsynch)
-{
-    return ::getb(getCharLambda
-                  , unsynch
-                  , oneByteBackLambda);
+uchar Binary::get() {
+    return extr::get([this](char *c) {
+        return this->getChar(c);
+    });
 }
 
-ByteOrder Binary::getBOM(bool unsynch)
-{
-    return ::getBOM(getCharLambda
-                     , unsynch
-                     , oneByteBackLambda);
+uchar Binary::getb(bool unsynch) {
+    return extr::getUns(getLambda, unsynch, backLambda);
 }
 
-QString Binary::getIso8859Str(bool unsynch, const long long &dur)
-{
-    return ::getIso8859Str(getCharLambda
-                             , unsynch
-                             , oneByteBackLambda
-                             , dur);
+QString Binary::getUrl(bool unsynch, ulong len) {
+    return extr::getUrl(chLambda, unsynch, backLambda, len);
 }
 
-QString Binary::getUtf16Str(bool unsynch, ByteOrder bo, const long long &dur)//не чекает BOM
-{
-    return ::getUtf16Str(getCharLambda
-                           , unsynch
-                           , bo
-                           , oneByteBackLambda
-                           , dur);
+QString Binary::getEncodingDependentString(bool unsynch, TagVersion v, ulong len) {
+    qDebug() << "Binary: calling function for encoding dependent string from extr namespace, length is" << len << ::end;
+    return extr::getEncodingDependentString(chLambda, unsynch, backLambda, len, v);
 }
 
-QString Binary::getUtf8Str(bool unsynch, const long long &dur)
-{
-    return ::getUtf8Str(getCharLambda
-                          , unsynch
-                          , oneByteBackLambda
-                          , dur);
+QList<QString> Binary::getList(bool unsynch, TagVersion v, ulong len, QChar separator) {
+    return extr::getList(chLambda, unsynch, backLambda, len, v, separator);
 }
 
-QString Binary::getUcs2Str(bool unsynch, ByteOrder bo, const long long &dur)//не чекает BOM
-{
-    return ::getUcs2Str(getCharLambda
-                          , unsynch
-                          , bo
-                          , oneByteBackLambda
-                          , dur);
+ulong Binary::get32Bit(bool unsynch, ulong &count) {
+    return extr::get32Bit(chLambda, unsynch, backLambda, count);
 }
 
-QString Binary::getEncodingDependentString(bool unsynch, TagVersion v, const long long &dur)
-{
-    return ::getEncodingDependentString(getCharLambda, unsynch, oneByteBackLambda, dur,
-                                           getStringEncoding(unsynch,v));
+std::pair<uint, uint> Binary::getNumericPair(bool unsynch, ulong len, char separator) {
+    return extr::getNumericPair(chLambda, unsynch, backLambda, len, separator);
 }
 
-void Binary::parseFromStart()
-{
+void Binary::parseFromStart() {
     seek(0);
     TagVersion v;
-    do
-    {
+    qDebug() << "Binary: starting to seek for tag from the start\n";
+    do {
         v = v2Header();
-        Parser v2(v,*this);
-        v2.parse();
+        if (v == noTag)
+            break;
+        else {
+            qDebug() << "Binary: starting to parse\n";
+            TagParser v2(v, *this);
+            v2.parse();
+            qDebug() << "Binary: ended parsing" << end;
+        }
     } while (v != noTag);
+    qDebug() << "Binary: parsing from start complete" << end;
 }
 
-void Binary::parseFromEnd()
-{
-    backFromEnd(128);//перемещаемся на место предполагаемого тега v1
-    if (checkFor("TAG"))//перемещаемся на место предполагаемого футера
-        backFromEnd(138);
-    else
-        backFromEnd(10);
+void Binary::parseFromEnd() {
+    qDebug() << "Binary: starting to seek for tag from end" << end;
+
+    seekForStartOfFooter();
 
     TagVersion v;
     qint64 len = 0;
 
-    do
-    {
+    do {
         len = parseV2Footer();//чекаем длину предполагаемого тега
         shift(-len - 20);//перемещаемся в начало предполагаемого тега
         v = v2Header();//чекаем идентификатор хедера предполагаемого тега
-        Parser v2(v,*this);//создаём парсер для предполагаемого тега
-        v2.parse();//парсим, если есть что парсить
-        shift(-len - 20);//перемещаемся в место, где начинается футер предыдущего тега, если он есть
+        if (v == noTag)
+            break;
+        else {
+            qDebug() << "Binary: starting to parse v2.4 header at the end of the file" << end;
+            TagParser v2(v, *this);
+            v2.parse();
+            shift(-len - 20);//перемещаемся в место, где начинается футер предыдущего тега, если он есть
+            qDebug() << "Binary: parsing of the 2.4 header at the end complete" << end;
+        }
     } while (v != noTag);
+
+    qDebug() << "Binary: parsing from end complete" << end;
 }
 
-void Binary::parseV1()
-{
-    if (data.needsV1())
-    {
+void Binary::parseV1() {
+    if (data.needsV1()) {
+        qDebug() << "Binary: starting to seek for v1" << end;
+
         backFromEnd(128);//перемещаемся на место предполагаемого тега v1
-        if (checkFor("TAG"))
-        {
-            Parser v1(*this);
+        if (checkFor3Char("TAG")) {
+            qDebug() << "Binary: starting to parse v1" << end;
+            TagParser v1(*this);
             v1.parse();
+            qDebug() << "Binary: parsing v1 complete" << end;
         }
     }
 }
 
-StringEncoding Binary::getStringEncoding(bool unsynch, TagVersion v)
-{
-    return ::getStringEncoding(getCharLambda, unsynch, oneByteBackLambda, v);
-}
-
-bool Binary::parse()
-{
-    if (successfullyOpened)
-    {
+bool Binary::parse() {
+    if (successfullyOpened) {
+        qDebug() << "Binary: start parsing\n";
         parseFromStart();
         parseFromEnd();
+#ifndef NO_V1_PARSING
         parseV1();
+#endif
+        qDebug() << "Binary: parsing complete" << end;
         return data.hasInfo();
     }
     else
         return false;
 }
 
-void Binary::displayInfo(bool console) const
-{
-    if (console)
-        data.displayOnConsole();
-    else
-        data.displayOnUi();
-}
-
-void Binary::backFromEnd(qint64 offset)
-{
+void Binary::backFromEnd(qint64 offset) {
     qint64 sz = size();
     if (offset <= sz)
         seek(sz - offset);
@@ -255,16 +241,15 @@ void Binary::backFromEnd(qint64 offset)
         seek(0);
 }
 
-char Binary::charBackwards()
-{
+char Binary::charBackwards() {
     char c;
     getChar(&c);
     shift(-2);
     return c;
 }
 
-bool Binary::checkFor(string value)
-{
+bool Binary::checkFor3Char(std::string value) {
+    qDebug() << "Binary: checking for" << value.c_str() << end;
     char id[4];
     for (int i = 0;i < 3;++i)
         getChar(id + i);
@@ -272,36 +257,46 @@ bool Binary::checkFor(string value)
     return !strcmp(id,value.c_str());
 }
 
-TagVersion Binary::v2Header()
-{
-    if (checkFor("ID3"))
-    {
+TagVersion Binary::v2Header() {
+    qDebug() << "Binary: checking for v2 header\n";
+    if (checkFor3Char("ID3")) {
         uchar version = get();
-        if (get() != 255)
-        {
-            switch (version)
-            {
-            case 2:{return two;}
-            case 3:{return three;}
-            case 4:{return four;}
-            default:{return noTag;}
+        if (get() != 255) {
+            switch (version) {
+            case 2: {
+                qDebug() << "Binary: v2 header found, version is" << 2 << end;
+                return two;
+            }
+            case 3: {
+                qDebug() << "Binary: v2 header found, version is" << 3 << end;
+                return three;
+            }
+            case 4: {
+                qDebug() << "Binary: v2 header found, version is" << 4 << end;
+                return four;
+            }
+            default: {
+                qDebug() << "Binary: no v2 header\n";
+                return noTag;
+            }
             }
         }
-        else
+        else {
+            qDebug() << "Binary: no v2 header\n";
             return noTag;
+        }
     }
-    else
+    else {
+        qDebug() << "Binary: no v2 header\n";
         return noTag;
+    }
 }
 
-ulong Binary::parseV2Footer()//возвращает 0, если футер не найден или некорректен
-{
-    if (checkFor("3DI"))
-    {
-        if (get() == 4)
-        {
-            if (get() != 255)
-            {
+ulong Binary::parseV2Footer() {//возвращает 0, если футер не найден или некорректен
+    qDebug() << "Binary: trying to parse v2 footer" << end;
+    if (checkFor3Char("3DI")) {
+        if (get() == 4) {
+            if (get() != 255) {
                 mByte flags = get();
                 if (!flags[4])//если в футере указано, что футера нет
                     return 0;
@@ -311,8 +306,7 @@ ulong Binary::parseV2Footer()//возвращает 0, если футер не 
 
                 ulong len = 0;
                 uchar c;
-                for (int i = 3;i >= 0;--i)
-                {
+                for (int i = 3;i >= 0;--i) {
                     c = get();
                     if (c > 127)//выставлен msb
                         return 0;

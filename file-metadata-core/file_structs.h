@@ -1,5 +1,5 @@
 #pragma once
-using namespace std;
+#include "global_constants.h"
 
 struct GeneralInfo
 {
@@ -22,10 +22,10 @@ struct FileMetadata
 {
     QHash<QString, QString> textFields{};//text info
     QHash<QString, QString> commercial{};//commercial info
-    QHash<QString, QByteArray> ufids{};//unique file id
+    QHash<QString, std::vector<uchar>> ufids{};//unique file id
     GeneralInfo generalInfo{};//исполнитель, альбом, название трека
-    pair<uint, uint> albumPosition{make_pair(0,0)};
-    pair<uint, uint> setPosition{make_pair(0,0)};
+    std::pair<uint, uint> albumPosition{std::make_pair(0,0)};
+    std::pair<uint, uint> setPosition{std::make_pair(0,0)};
     char isrc[13];//последний байт - индикатор наличия isrc; он равен 0, если isrc отсутствует, в противном случае не равен 0
     QList<QString> languages{};
     //дописать
@@ -34,9 +34,7 @@ struct FileMetadata
 
     bool hasInfo() const;
 
-    void displayOnConsole() const;//написать
-
-    void displayOnUi() const;//написать
+    void showOnEdit(QTextEdit *) const;
 
     bool needsV1() const;
 };

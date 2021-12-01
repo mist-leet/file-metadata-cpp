@@ -1,23 +1,22 @@
 #include "frame_34.h"
-using namespace std;
+using std::vector;
 
-Frame34::Frame34(Tag &t)
-    : Frame(t)
-    , frameStatus()
-    , frameFormat()
+Frame34::Frame34(Binary &f, bool u)
+    : Frame(f, u)
 {}
 
 Frame34::~Frame34() = default;
 
-bool Frame34::parse()//переделать
-{
-    if (parseHeader())
-    {
-        if (frameFormat.encryption)
+bool Frame34::parse() {
+    qDebug() << "Frame3,4: starting to parse\n";
+    if (parseHeader()) {
+        if (unreadable) {
+            qDebug() << "Frame3,4: i am unreadable, skipping\n";
             return skip();
-        else
-        {
+        }
+        else {
             checkCompression();
+            qDebug() << "Frame3,4: ended checking compression, going to parse data\n";
             return parseData();
         }
     }
@@ -25,175 +24,75 @@ bool Frame34::parse()//переделать
         return !skip();
 }
 
-FrameFormat & Frame34::getFormat()
-{
-    return frameFormat;
-}
-
-FrameStatus & Frame34::getStatus()
-{
+FrameStatus & Frame34::getStatus() {
     return frameStatus;
 }
 
-const FrameFormat & Frame34::getFormat() const
-{
-    return frameFormat;
-}
-
-const FrameStatus & Frame34::getStatus() const
-{
+const FrameStatus & Frame34::getStatus() const {
     return frameStatus;
 }
 
-ByteOrder Frame34::getBOM() const
-{
-    if (content)
-        return content.getBOM();
-    else
-    {
-        if (tagHasContent())
-            return tagsContent().getBOM();
-        else
-            return FileHolder::getBOM();
-    }
-}
-
-QString Frame34::getIso8859Str() const
-{
-    if (content)
-        return content.getIso8859Str();
-    else
-    {
-        if (tagHasContent())
-            return tagsContent().getIso8859Str();
-        else
-            return FileHolder::getIso8859Str();
-    }
-}
-
-QString Frame34::getIso8859Str(const long long &dur) const
-{
-    if (content)
-        return content.getIso8859Str(dur);
-    else
-    {
-        if (tagHasContent())
-            return tagsContent().getIso8859Str(dur);
-        else
-            return FileHolder::getIso8859Str(dur);
-    }
-}
-
-QString Frame34::getUtf16Str(ByteOrder bo) const//не чекает BOM
-{
-    if (content)
-        return content.getUtf16Str(bo);
-    else
-    {
-        if (tagHasContent())
-            return tagsContent().getUtf16Str(bo);
-        else
-            return FileHolder::getUtf16Str(bo);
-    }
-}
-
-QString Frame34::getUtf16Str(ByteOrder bo, const long long &dur) const//не чекает BOM
-{
-    if (content)
-        return content.getUtf16Str(bo, dur);
-    else
-    {
-        if (tagHasContent())
-            return tagsContent().getUtf16Str(bo, dur);
-        else
-            return FileHolder::getUtf16Str(bo, dur);
-    }
-}
-
-QString Frame34::getUtf8Str() const
-{
-    if (content)
-        return content.getUtf8Str();
-    else
-    {
-        if (tagHasContent())
-            return tagsContent().getUtf8Str();
-        else
-            return FileHolder::getUtf8Str();
-    }
-}
-
-QString Frame34::getUtf8Str(const long long &dur) const
-{
-    if (content)
-        return content.getUtf8Str(dur);
-    else
-    {
-        if (tagHasContent())
-            return tagsContent().getUtf8Str(dur);
-        else
-            return FileHolder::getUtf8Str(dur);
-    }
-}
-
-QString Frame34::getUcs2Str(ByteOrder bo) const//не чекает BOM
-{
-    if (content)
-        return content.getUcs2Str(bo);
-    else
-    {
-        if (tagHasContent())
-            return tagsContent().getUcs2Str(bo);
-        else
-            return FileHolder::getUcs2Str(bo);
-    }
-}
-
-QString Frame34::getUcs2Str(ByteOrder bo, const long long &dur) const//не чекает BOM
-{
-    if (content)
-        return content.getUcs2Str(bo, dur);
-    else
-    {
-        if (tagHasContent())
-            return tagsContent().getUcs2Str(bo, dur);
-        else
-            return FileHolder::getUcs2Str(bo, dur);
-    }
-}
-
-QString Frame34::getEncodingDependentString() const
-{
-    if (content)
+QString Frame34::getEncodingDependentString() const {
+    qDebug() << "Frame3,4: getting encoding dependent string\n";
+    if (content) {
+        qDebug() << "Frame3,4: getting encoding dependent string from frame's content\n";
         return getEncodingDependentString(content);
-    else
-    {
-        if (tagHasContent())
+    }
+    else {
+        if (tagHasContent()) {
+            qDebug() << "Frame3,4: getting encoding dependent string from tag's content\n";
             return getEncodingDependentString(tagsContent());
-        else
-            return getEncodingDependentString(true);
+        }
+        else {
+            qDebug() << "Frame3,4: getting encoding dependent string straight from file\n";
+            return getEncodingDependentStringFileHolder();
+        }
     }
 }
 
-QString Frame34::getEncodingDependentString(const long long &dur) const
-{
+QString Frame34::getEncodingDependentString(ulong len) const {
     if (content)
-        return getEncodingDependentString(content, dur);
-    else
-    {
+        return getEncodingDependentStringFromContents(content, len);
+    else {
         if (tagHasContent())
-            return getEncodingDependentString(tagsContent(), dur);
+            return getEncodingDependentStringFromContents(tagsContent(), len);
         else
-            return getEncodingDependentString(true, dur);
+            return getEncodingDependentStringFileHolder(len);
     }
 }
 
-QByteArray Frame34::getBinaryTillEnd() const
-{
+QString Frame34::getUrl() const {
+    if (content) {
+        return content.getUrl();
+    }
+    else {
+        if (tagHasContent()) {
+            return tagsContent().getUrl();
+        }
+        else {
+            return FileHolder::getUrl();
+        }
+    }
+}
+
+QString Frame34::getUrl(ulong len) const {
+    if (content) {
+        return content.getUrl(len);
+    }
+    else {
+        if (tagHasContent()) {
+            return tagsContent().getUrl(len);
+        }
+        else {
+            return FileHolder::getUrl(len);
+        }
+    }
+}
+
+vector<uchar> Frame34::getBinaryTillEnd() const {
     if (content)
         return content.getBinaryTillEnd();
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().getBinaryTillEnd();
         else
@@ -201,14 +100,45 @@ QByteArray Frame34::getBinaryTillEnd() const
     }
 }
 
-bool Frame34::skip() const
-{
+ulong Frame34::get32Bit(ulong &count) const {
+    if (content)
+        return content.get32Bit(count);
+    else {
+        if (tagHasContent())
+            return tagsContent().get32Bit(count);
+        else
+            return FileHolder::get32Bit(count);
+    }
+}
+
+std::pair<uint, uint> Frame34::getNumericPair(ulong len, char separator) const {
+    if (content)
+        return content.getNumericPair(len, toUchar(separator));
+    else {
+        if (tagHasContent())
+            return tagsContent().getNumericPair(len, toUchar(separator));
+        else
+            return FileHolder::getNumericPair(len, separator);
+    }
+}
+
+QList<QString> Frame34::getList(ulong len, QChar separator) const {
+    if (content)
+        return __getList(content, len, separator);
+    else {
+        if (tagHasContent())
+            return __getList(tagsContent(), len, separator);
+        else
+            return __getList(len, separator);
+    }
+}
+
+bool Frame34::skip() const {
+    qDebug() << "Frame3,4: skipping\n";
     if (content)
         return content.skip();
-    else
-    {
-        if (tagHasContent())
-        {
+    else {
+        if (tagHasContent()) {
             tagsContent().seek(endPosition);
             return true;
         }
@@ -217,8 +147,7 @@ bool Frame34::skip() const
     }
 }
 
-long long Frame34::pos() const
-{
+long long Frame34::pos() const {
     if (content)
         return content.pos();
     else
@@ -230,12 +159,10 @@ long long Frame34::pos() const
     }
 }
 
-void Frame34::seek(long long pos) const
-{
+void Frame34::seek(long long pos) const {
     if (content)
         return content.seek(pos);
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().seek(pos);
         else
@@ -243,12 +170,10 @@ void Frame34::seek(long long pos) const
     }
 }
 
-void Frame34::shift(long long offset) const
-{
+void Frame34::shift(long long offset) const {
     if (content)
         return content.shift(offset);
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().shift(offset);
         else
@@ -256,12 +181,10 @@ void Frame34::shift(long long offset) const
     }
 }
 
-bool Frame34::end() const
-{
+bool Frame34::end() const {
     if (content)
         return content.end();
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().end();
         else
@@ -269,12 +192,10 @@ bool Frame34::end() const
     }
 }
 
-long long Frame34::size() const
-{
+long long Frame34::size() const {
     if (content)
         return content.size();
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().size();
         else
@@ -282,12 +203,10 @@ long long Frame34::size() const
     }
 }
 
-string Frame34::getSymbols(int amount)
-{
+std::string Frame34::getSymbols(int amount) {
     if (content)
         return content.getSymbols(amount);
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().getSymbols(amount);
         else
@@ -295,12 +214,10 @@ string Frame34::getSymbols(int amount)
     }
 }
 
-char Frame34::ch() const
-{
+char Frame34::ch() const {
     if (content)
         return content.ch();
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().ch();
         else
@@ -308,12 +225,10 @@ char Frame34::ch() const
     }
 }
 
-uchar Frame34::get() const
-{
+uchar Frame34::get() const {
     if (content)
         return content.get();
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().get();
         else
@@ -321,12 +236,10 @@ uchar Frame34::get() const
     }
 }
 
-char Frame34::uch() const
-{
+char Frame34::uch() const {
     if (content)
         return content.ch();
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().ch();
         else
@@ -334,12 +247,10 @@ char Frame34::uch() const
     }
 }
 
-uchar Frame34::getb() const
-{
+uchar Frame34::getb() const {
     if (content)
         return content.get();
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().get();
         else
@@ -347,12 +258,10 @@ uchar Frame34::getb() const
     }
 }
 
-char Frame34::ch(int &count) const
-{
+char Frame34::ch(ulong &count) const {
     if (content)
         return content.ch(count);
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().ch(count);
         else
@@ -360,12 +269,10 @@ char Frame34::ch(int &count) const
     }
 }
 
-uchar Frame34::get(int &count) const
-{
+uchar Frame34::get(ulong &count) const {
     if (content)
         return content.get(count);
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().get(count);
         else
@@ -373,12 +280,10 @@ uchar Frame34::get(int &count) const
     }
 }
 
-char Frame34::uch(int &count) const
-{
+char Frame34::uch(ulong &count) const {
     if (content)
         return content.ch(count);
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().ch(count);
         else
@@ -386,12 +291,10 @@ char Frame34::uch(int &count) const
     }
 }
 
-uchar Frame34::getb(int &count) const
-{
+uchar Frame34::getb(ulong &count) const {
     if (content)
         return content.get(count);
-    else
-    {
+    else {
         if (tagHasContent())
             return tagsContent().get(count);
         else
@@ -399,26 +302,25 @@ uchar Frame34::getb(int &count) const
     }
 }
 
-void Frame34::checkCompression()//вызывается, когда хедер уже пропаршен
-{
-    if (frameFormat.compressionInfo.second)//если фрейм сжат
-    {
-        if (tagHasContent())
-        {
-            if (!content.decompressRawData(tagsContent(),length,frameFormat.compressionInfo.first))
-                qCritical() << "фрейм не смог достать байты из хранилища тега\n";
+void Frame34::checkCompression() {
+    if (uncompressedSize > 0) {
+        qDebug() << "Frame3,4: doing something with compressed info\n";
+        if (tagHasContent()) {
+            if (!content.decompressRawData(tagsContent(),length,uncompressedSize))
+                qCritical() << "Frame3,4: фрейм не смог достать байты из своего тега\n";
         }
-        else
-        {
-            if (!content.decompressRawData(file,unsynch,length,frameFormat.compressionInfo.first))
-                qCritical() << "фрейм не смог достать байты из файла\n";
+        else {
+            if (!content.decompressRawData(file,unsynch,length,uncompressedSize))
+                qCritical() << "Frame3,4: фрейм не смог достать байты из файла\n";
         }
 
-        if (content)
-        {
+        if (content) {
             ulong len_diff = length - content.size();
             endPosition -= len_diff;
             length = content.size();
         }
+    }
+    else {
+        qDebug() << "Frame3,4: no compression\n";
     }
 }

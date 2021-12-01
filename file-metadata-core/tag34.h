@@ -1,7 +1,6 @@
 #pragma once
 #include "tag.h"
 #include "file_contents.h"
-using namespace std;
 
 class Tag34 : public Tag
 {
@@ -10,9 +9,7 @@ protected:
     bool footerPresence{false};
     mutable FileContents content{};//mutable - костыль, чтобы можно было переопределять const virtual функции
     ulong sizeOfExtendedHeader{0};
-    pair<ulong, bool> expectedCrc{make_pair(0,false)};
-    EncryptionMethodMarkers encryptionInfo;
-    GroupMarkers groupingInfo;
+    std::pair<ulong, bool> expectedCrc{std::make_pair(0,false)};
 
 private:
     Tag34(const Tag34 &) = delete;
@@ -21,7 +18,7 @@ private:
 protected:
     virtual bool parseExtendedHeader() = 0;
 
-    virtual string getFrameId() override final;
+    virtual std::string getFrameId() override final;
 
     virtual long long pos() const override final;
 
@@ -34,11 +31,7 @@ protected:
     virtual bool parseData() override final;
 
 public:
-    explicit Tag34(Binary & f);
-
-    EncryptionMethodMarkers & encrInfo();
-
-    GroupMarkers & groupInfo();
+    explicit Tag34(Binary &);
 
     static bool isUserdefUrl(const char *const);
 

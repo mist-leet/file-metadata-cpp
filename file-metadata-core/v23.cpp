@@ -1,6 +1,4 @@
 #include "v23.h"
-#include "frames3.h"
-using namespace std;
 
 Binary::V23::V23(Binary &file) :
     Tag34(file)
@@ -19,10 +17,9 @@ bool Binary::V23::parseHeader()
     bool extdh = flags.test(6);
     experimentalTag = flags.test(5);
 
-    bool correctness = setLength([this](int &count)
-                                    {
-                                        return this->FileHolder::get(count);
-                                    }).second;
+    bool correctness = setLength([this] {
+                                        return this->FileHolder::get();
+                                    });
     endPosition = startPosition + 10 + length;
     if (correctness && extdh)
         correctness = parseExtendedHeader();
@@ -62,26 +59,22 @@ bool Binary::V23::isUserdefTxt(const char *const id)
      && strcmp(id, "TSSE") && strcmp(id, "TYER")&& strcmp(id, "TCOM") && strcmp(id, "TCON"));
 }
 
-bool Binary::V23::handleCrc()
-{
-    if (!content.setDataAndCheckSrc(file,unsynch,endPosition - sizeOfPadding - pos(),expectedCrc.first))
-    {
-        qCritical() << "посчитанный CRC32 не совпадает с переданным\n";
+bool Binary::V23::handleCrc() {
+    if (!content.setDataAndCheckSrc(file,unsynch,endPosition - sizeOfPadding - pos(),expectedCrc.first)) {
+        qCritical() << "Frame3: посчитанный CRC32 не совпадает с переданным\n";
         return false;
     }
-    else
-    {
+    else {
         extremePositionOfFrame = content.size() - 11 - sizeOfPadding;
         return true;
     }
 }
 
-void Binary::V23::actualParse()
-{
-    while (pos() <= extremePositionOfFrame)
-    {
-        string frame_id = getFrameId();
-        Parser frame(frame_id.c_str(), *this);
+void Binary::V23::actualParse() {
+    while (pos() <= extremePositionOfFrame) {
+        std::string frame_id = getFrameId();
+        std::cout << "V2.3: got frame ID '" << frame_id.c_str() << "'\n\n";
+        FrameParser frame(frame_id.c_str(), *this);
         if (frame.parse() == noId)
             shift(-3);
     }

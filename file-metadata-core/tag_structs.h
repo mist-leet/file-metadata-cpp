@@ -1,6 +1,5 @@
 #pragma once
-#include "easy_ptr.h"
-using namespace std;
+#include "pch.h"
 
 //ограничения для тега v2.4
 struct Restrictions
@@ -19,24 +18,13 @@ struct Restrictions
      * 10 - 64х64 пкс или менее
      * 11 - строго 64х64 пкс
     */
-    pair<bool,bool> imageSizeRest;
+    std::pair<bool,bool> imageSizeRest{std::make_pair(false,false)};
 
     Restrictions()
-        : imageSizeRest(make_pair(false,false))
     {}
 
-    operator bool() const {return presence;}
-};
-
-struct GroupMarkers
-{
-    QHash<unsigned char, QString> url;
-    QHash<unsigned char, QByteArray> info;
-    QHash<unsigned char, QByteArray> sign;
-};
-
-struct EncryptionMethodMarkers
-{
-    QHash<unsigned char, QString> url;
-    QHash<unsigned char, QByteArray> info;
+    operator bool() const
+    {
+        return presence;
+    }
 };

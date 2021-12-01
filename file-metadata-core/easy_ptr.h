@@ -1,12 +1,10 @@
 #pragma once
-#include "new.h"
-using namespace std;
 
 template<typename T>
 class EasyPtr
 {
     T *ptr{nullptr};
-    uint size{0};
+    ulong size{0};
 
     EasyPtr(const EasyPtr<T> &) = delete;
     EasyPtr(EasyPtr<T> &&) = delete;
@@ -14,17 +12,17 @@ class EasyPtr
     EasyPtr<T> & operator= (EasyPtr<T> &&) = delete;
 
 public:
-    EasyPtr(uint);
+    EasyPtr(ulong);
 
     EasyPtr();
 
-    bool allocate(uint);
+    bool allocate(ulong);
 
     void free();
 
-    bool validPos(uint) const;
+    bool validPos(ulong) const;
 
-    uint getSize() const;
+    ulong getSize() const;
 
     T * getPtr();
 
@@ -32,17 +30,17 @@ public:
 
     const T * constPtr() const;
 
-    T & operator[] (uint);
+    T & operator[] (ulong);
 
-    const T & operator[] (uint) const;
+    const T & operator[] (ulong) const;
 
     T & operator* ();
 
     const T & operator* () const;
 
-    T * operator+ (uint);
+    T * operator+ (ulong);
 
-    const T * operator+ (uint) const;
+    const T * operator+ (ulong) const;
 
     operator bool () const;
 
@@ -50,7 +48,7 @@ public:
 };
 
 template<typename T>
-EasyPtr<T>::EasyPtr(uint sz)
+EasyPtr<T>::EasyPtr(ulong sz)
 {
     allocate(sz);
 }
@@ -65,11 +63,11 @@ EasyPtr<T>::~EasyPtr()
 }
 
 template<typename T>
-bool EasyPtr<T>::allocate(uint sz)
+bool EasyPtr<T>::allocate(ulong sz)
 {
     if (!ptr && sz)
     {
-        ptr = new(nothrow) T[sz];
+        ptr = new(std::nothrow) T[sz];
         if (ptr)
             size = sz;
         return ptr;
@@ -81,19 +79,19 @@ bool EasyPtr<T>::allocate(uint sz)
 template<typename T>
 void EasyPtr<T>::free()
 {
-    if (ptr) {delete [] ptr;}
+    delete [] ptr;
     ptr = nullptr;
     size = 0;
 }
 
 template<typename T>
-bool EasyPtr<T>::validPos(uint pos) const
+bool EasyPtr<T>::validPos(ulong pos) const
 {
     return ptr && pos < size;
 }
 
 template<typename T>
-uint EasyPtr<T>::getSize() const
+ulong EasyPtr<T>::getSize() const
 {
     return size;
 }
@@ -117,13 +115,13 @@ const T * EasyPtr<T>::constPtr() const
 }
 
 template<typename T>
-T & EasyPtr<T>::operator[] (uint pos)
+T & EasyPtr<T>::operator[] (ulong pos)
 {
     return ptr[pos];
 }
 
 template<typename T>
-const T & EasyPtr<T>::operator[] (uint pos) const
+const T & EasyPtr<T>::operator[] (ulong pos) const
 {
     return ptr[pos];
 }
@@ -141,13 +139,13 @@ const T & EasyPtr<T>::operator* () const
 }
 
 template<typename T>
-T * EasyPtr<T>::operator+ (uint offset)
+T * EasyPtr<T>::operator+ (ulong offset)
 {
     return ptr + offset;
 }
 
 template<typename T>
-const T * EasyPtr<T>::operator+ (uint offset) const
+const T * EasyPtr<T>::operator+ (ulong offset) const
 {
     return ptr + offset;
 }

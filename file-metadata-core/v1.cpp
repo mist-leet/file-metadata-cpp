@@ -1,5 +1,4 @@
 #include "v1.h"
-using namespace std;
 
 Binary::V1::V1(Binary &f)
     : FileHolder(f)
@@ -7,33 +6,39 @@ Binary::V1::V1(Binary &f)
 
 Binary::V1::~V1() = default;
 
-bool Binary::V1::parseHeader()
-{
+bool Binary::V1::parseHeader() {
     return true;
 }
 
-bool Binary::V1::parse()
-{
+bool Binary::V1::parse() {
+    qDebug() << "V1: starting to parse\n";
     return parseData();
 }
 
-QString Binary::V1::getField(int n) const
-{
-    if (n <= 30)
-    {
+QString Binary::V1::getField(int n) const {
+    if (n <= 30) {
         char c[30];
-        for (int i = 0; i < n;++i)
-            c[i] = ch();
-        return QString::fromLatin1(c,n);
+        char curr;
+        int i = 0;
+        while (i < n) {
+            curr = ch();
+            if (curr) {
+                c[i] = curr;
+                ++i;
+            }
+            else {
+                break;
+            }
+        }
+        return QString::fromLatin1(c,i);
     }
     else
         return QString();
 }
 
-bool Binary::V1::parseData()
-{
-    if (file.getData().generalInfo.title.isEmpty())
-    {
+bool Binary::V1::parseData() {
+    if (file.getData().generalInfo.title.isEmpty()) {
+        qDebug() << "V1: getting title\n";
         QString field = getField(30);
         file.getData().generalInfo.title = field;
         if (file.getData().generalInfo.titleSorting.isEmpty())
@@ -42,8 +47,8 @@ bool Binary::V1::parseData()
     else
         shift(30);
 
-    if (file.getData().generalInfo.performer.isEmpty())
-    {
+    if (file.getData().generalInfo.performer.isEmpty()) {
+        qDebug() << "V1: getting performer\n";
         QString field = getField(30);
         file.getData().generalInfo.performer = field;
         if (file.getData().generalInfo.performerSorting.isEmpty())
@@ -52,8 +57,8 @@ bool Binary::V1::parseData()
     else
         shift(30);
 
-    if (file.getData().generalInfo.album.isEmpty())
-    {
+    if (file.getData().generalInfo.album.isEmpty()) {
+        qDebug() << "V1: getting album\n";
         QString field = getField(30);
         file.getData().generalInfo.album = field;
         if (file.getData().generalInfo.albumSorting.isEmpty())
@@ -62,16 +67,16 @@ bool Binary::V1::parseData()
     else
         shift(30);
 
-    if (!file.getData().textFields.contains("Release time"))
-    {
+    if (!file.getData().textFields.contains("Release time")) {
+        qDebug() << "V1: getting release time\n";
         file.getData().textFields["Release time"] = getField(4);
     }
     else
         shift(4);
 
     bool no_comm = !file.getData().textFields.contains("Comment");
-    if (no_comm)
-    {
+    if (no_comm) {
+        qDebug() << "V1: getting comment\n";
         file.getData().textFields["Comment"] = getField(28);
     }
     else
@@ -79,14 +84,12 @@ bool Binary::V1::parseData()
 
     char mark = ch();
 
-    if (mark)
-    {
+    if (mark) {
         char smth = ch();
         if (no_comm)
             file.getData().textFields["Comment"] += mark += smth;
     }
-    else
-    {
+    else {
         uchar num = get();
         if (!file.getData().albumPosition.first)
             file.getData().albumPosition.first = num;
@@ -94,8 +97,10 @@ bool Binary::V1::parseData()
 
     uchar genre_id = get();
     if (genre_id != 255)
-        if (!file.getData().textFields.contains("Genre"))
+        if (!file.getData().textFields.contains("Genre")) {
+            qDebug() << "V1: getting genre\n";
             file.getData().textFields["Genre"] = getGenre(genre_id);
+        }
 
     return true;
 }

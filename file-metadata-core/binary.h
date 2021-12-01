@@ -2,8 +2,8 @@
 #include "frame_structs.h"
 #include "tag_structs.h"
 #include "file_structs.h"
-#include "char_extracting.h"
-using namespace std;
+#include "new_char_extracting.h"
+#include "new.h"
 
 class Binary : public QFile
 {
@@ -16,132 +16,75 @@ protected:
     bool successfullyOpened{false};
     FileMetadata data{};
 
-    function<bool(char *)> getCharLambda{
-                                            [this](char * c)
-                                            {
-                                                return this->getChar(c);
-                                            }
-                                         };
+    std::function<char()> chLambda {
+                                    [this] {
+                                        return this->ch();
+                                    }
+                                };
 
-    function<void()> oneByteBackLambda{
-                                            [this]()
-                                            {
-                                                return this->oneByteBack();
-                                            }
-                                         };
+    std::function<uchar()> getLambda {
+                                    [this] {
+                                        return this->get();
+                                    }
+                                };
+
+    std::function<void()> backLambda {
+                                    [this] {
+                                        return this->oneByteBack();
+                                    }
+                                };
+
+    void seekForStartOfFooter();
+
+    void shift(long long = -1);
+
+    void backFromEnd(qint64);
+    char charBackwards();
+    bool checkFor3Char(std::string);
+
+    TagVersion v2Header();
 
 public:
     class V1;
     class V22;
     class V23;
     class V24;
-    //friend class ::Parser;
 
     explicit Binary(const QString &);
-
     Binary();
 
     bool openf(const QString &);
 
-    /*---<элементарные функции>---*/
     char ch();
+    char uch(bool);
+    char ch(ulong&);
+    char uch(ulong&, bool);
 
     uchar get();
-
-    char uch(bool);
-
     uchar getb(bool);
+    uchar get(ulong&);
+    uchar getb(ulong&, bool);
 
-    template<typename T>
-    char ch(T &);
-
-    template<typename T>
-    uchar get(T &);
-
-    template<typename T>
-    char uch(T &, bool);
-
-    template<typename T>
-    uchar getb(T &, bool);
-    /*---</элементарные функции>---*/
-
-    ByteOrder getBOM(bool);
-
-    QString getIso8859Str(bool, const long long &);
-
-    QString getUtf16Str(bool, ByteOrder, const long long &);//не чекает BOM
-
-    QString getUtf8Str(bool, const long long &);
-
-    QString getUcs2Str(bool, ByteOrder, const long long &);//не чекает BOM
-
-    StringEncoding getStringEncoding(bool, TagVersion);
-
-    QString getEncodingDependentString(bool, TagVersion, const long long &);
-
-    QByteArray getBytes(bool, ulong);
+    QString getUrl(bool, ulong);
+    QString getEncodingDependentString(bool, TagVersion, ulong);
+    QList<QString> getList(bool, TagVersion, ulong, QChar);
+    ulong get32Bit(bool unsynch, ulong &count);
+    std::pair<uint, uint> getNumericPair(bool unsynch, ulong len, char separator);
+    std::vector<uchar> getBytes(bool, ulong);
 
     operator bool () const;
 
-    const FileMetadata & getData() const;
-
-    FileMetadata & getData();
-
-    bool parse();
-
-    void displayInfo(bool) const;
+    const FileMetadata &getData() const;
+    FileMetadata &getData();
 
     bool hasInfo() const;
 
-    void shift(long long = -1);
-
-    void backFromEnd(qint64);
-
-    char charBackwards();
-
-    bool checkFor(string);
-
-    TagVersion v2Header();
+    bool parse();
 
     ulong parseV2Footer();//возвращает 0, если футер не найден или некорректен
-
     void parseFromStart();
-
     void parseFromEnd();
-
     void parseV1();
 
     virtual ~Binary() override;
 };
-
-template<typename T>
-uchar Binary::get(T & count)
-{
-    return ::get(getCharLambda
-                , count);
-}
-
-template<typename T>
-char Binary::ch(T & count)
-{
-    return ::ch(getCharLambda
-                , count);
-}
-
-template<typename T>
-uchar Binary::getb(T & count, bool unsynch)
-{
-    return ::getb(getCharLambda
-                , unsynch
-                , oneByteBackLambda
-                , count);
-}
-
-template<typename T>
-char Binary::uch(T & count, bool unsynch)
-{
-    return ::uch(getCharLambda
-                , unsynch
-                , oneByteBackLambda
-                , count);
-}

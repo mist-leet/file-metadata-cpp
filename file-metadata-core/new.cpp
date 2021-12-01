@@ -1,20 +1,10 @@
 #include "new.h"
-using namespace std;
+using std::vector;
 
-ostream & operator << (ostream &stream, const QBitArray &array)
-{
-    stream << noboolalpha;
-    for (int i = array.size() - 1;i >=0;--i)
-        stream << array.testBit(i);
-    return stream;
-}
-
-long long power(long long num, int pow)
-{
+long long power(long long num, int pow) {
     if (pow < 0)
         return 0;
-    else
-    {
+    else {
         long long k = 1;
         for (int i = pow;i > 0;--i)
             k *= num;
@@ -47,8 +37,7 @@ QByteArray qUncompressWrapper(QByteArray &&raw_data, ulong expected_size)
     return qUncompress(raw_data);
 }
 
-uint toUint(const QString &s)
-{
+uint toUint(const QString &s) {
     uint a = 0;
     for (int i = s.length() - 1;i >= 0;--i)
         if (s[i].isDigit())

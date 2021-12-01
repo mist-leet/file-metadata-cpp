@@ -1,6 +1,4 @@
 #include "v24.h"
-#include "frames4RP.h"
-using namespace std;
 
 Binary::V24::V24(Binary &f)
     : Tag34(f)
@@ -20,17 +18,14 @@ bool Binary::V24::parseHeader()//парсит расширенный загол�
     experimentalTag = flags.test(5);
     footerPresence = flags.test(4);
 
-    bool correctness = setLength([this](int &count)
-                                    {
-                                        return this->FileHolder::get(count);
-                                    }).second;
-    if (footerPresence)
-    {
+    bool correctness = setLength([this] {
+                                        return this->FileHolder::get();
+                                    });
+    if (footerPresence) {
         endPosition = startPosition + length + 20;
         extremePositionOfFrame = endPosition - 21;
     }
-    else
-    {
+    else {
         endPosition = startPosition + length + 10;
         extremePositionOfFrame = endPosition - 11;
     }
@@ -137,7 +132,7 @@ bool Binary::V24::setRestrictions()
     //ограничения по кодировке изображений
     restrictions.imageEncodingRest = r.test(2);
     //ограничения по размеру изображений
-    restrictions.imageSizeRest = make_pair(r.test(1),r.test(0));
+    restrictions.imageSizeRest = std::make_pair(r.test(1),r.test(0));
 
     return true;
 }
@@ -178,8 +173,8 @@ void Binary::V24::actualParse()
 {
     while (pos() <= extremePositionOfFrame)
     {
-        string frame_id = getFrameId();
-        Parser frame(frame_id.c_str(), *this);
+        std::string frame_id = getFrameId();
+        FrameParser frame(frame_id.c_str(), *this);
         if (frame.parse() == noId)
             shift(-3);
     }

@@ -1,5 +1,4 @@
 #include "tag.h"
-using namespace std;
 
 Tag::Tag(Binary &file) :
     FileHolder(file)

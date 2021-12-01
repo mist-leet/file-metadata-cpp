@@ -1,11 +1,8 @@
 #include "new.h"
-using namespace std;
 
 //https://en.wikipedia.org/wiki/List_of_ID3v1_Genres
-QString getGenre(uchar id)
-{
-    switch (id)
-    {
+QString getGenre(uchar id) {
+    switch (id) {
     case 0:return "Blues";
     case 1:return "Classic Rock";
     case 2:return "Country";

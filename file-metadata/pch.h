@@ -1,2 +1,6 @@
 #pragma once
-#include <iostream>
+#include <QWidget>
+#include <QDragEnterEvent>
+#include <QApplication>
+//#define QT_NO_DEBUG_OUTPUT
+#include <QDebug>

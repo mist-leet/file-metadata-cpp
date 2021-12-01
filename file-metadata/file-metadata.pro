@@ -28,19 +28,14 @@ CONFIG += precompile_header
 PRECOMPILED_HEADER = pch.h
 SOURCES += \
         main.cpp \
-        widget.cpp \
-    interface.cpp \
-    widget_info.cpp
+        widget.cpp
 
 HEADERS += \
         widget.h \
-    pch.h \
-    interface.h \
-    widget_info.h
+    pch.h
 
 FORMS += \
-        widget.ui \
-    widget_info.ui
+        widget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

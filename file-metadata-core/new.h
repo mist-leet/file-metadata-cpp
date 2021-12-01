@@ -1,29 +1,12 @@
 #pragma once
-#include "pch.h"
-#include "char_conversions.h"
-using namespace std;
-
-enum ByteOrder {littleEndian, bigEndian, none};
-
-enum StringEncoding {iso_8859_1, ucs_2be, ucs_2le, utf_16be, utf_16le, utf_8, notGiven};
-
-enum ParsingResult {success, fail, noId};
-
-enum TagVersion {two, three, four, noTag};
-
-typedef bitset<8> mByte;
-
-ulong kbyte(ulong k = 1)
-{
-    return k*1024;
-}
-
-ulong mbyte(ulong k = 1)
-{
-    return k*1024*1024;
-}
+#include "global_constants.h"
+#include "easy_ptr.h"
 
 long long power(long long, int);
+
+ulong kbyte(ulong k = 1);
+
+ulong mbyte(ulong k = 1);
 
 QString getGenre(uchar);
 
@@ -34,17 +17,11 @@ T my_min(T one, T two)
     else {return two;}
 }
 
-template<typename T>
+template<typename T, class = std::enable_if_t<anyChar<T>>>
 T my_max(T one, T two)
 {
     if (one > two) {return one;}
     else {return two;}
 }
 
-ostream & operator << (ostream &, const QBitArray &);
-
-ushort cutUlong(ulong);//чекает, не превышает ли код символа 65 535
-
-QByteArray qUncompressWrapper(const QByteArray &raw_data, ulong expected_size);
-
-QByteArray qUncompressWrapper(QByteArray &&raw_data, ulong expected_size);
+std::vector<uchar> uncompressWrapper(const std::vector<uchar> &, ulong);

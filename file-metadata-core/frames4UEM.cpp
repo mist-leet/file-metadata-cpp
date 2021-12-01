@@ -1,61 +1,40 @@
-#include "frames4UEM.h"
-using namespace std;
+#include "frame4.h"
 
-//ENCR
-bool Binary::V24::ENCR::parseData()
-{
-    QString _url = getUrl();
-    uchar mark = getGroupMark();
-
-    if (Frame4::isGroupOrEncrMark(mark))
-    {
-        tag.encrInfo().info[mark] = getBinaryTillEnd();
-        tag.encrInfo().url[mark] = _url;
-    }
-
-    return skip();
+//UFID
+void Frames_4::UFID::extract() {
+    QString url = getUrl();
+    if (!url.isEmpty())
+        file.getData().ufids[url] = getBinaryTillEnd();
 }
 
+/*
 //ETCO
-bool Binary::V24::ETCO::parseData()
-{
+bool Frames_4::ETCO::parseData() {
     //
 }
 
 //EQU2
-bool Binary::V24::EQU2::parseData()
-{
+bool Frames_4::EQU2::parseData() {
     //
 }
 
-//UFID
-bool Binary::V24::UFID::parseData()
-{
-    QString url = getUrl();
-    file.getData().ufids[url] = getBinaryTillEnd();
-    return skip();
-}
-
 //USER
-bool Binary::V24::USER::parseData()
-{
+bool Frames_4::USER::parseData() {
     //
 }
 
 //USLT
-bool Binary::V24::USLT::parseData()
-{
+bool Frames_4::USLT::parseData() {
     //
 }
 
 //MLLT
-bool Binary::V24::MLLT::parseData()
-{
+bool Frames_4::MLLT::parseData() {
     //
 }
 
 //MCDI
-bool Binary::V24::MCDI::parseData()
-{
+bool Frames_4::MCDI::parseData() {
     //
 }
+*/
