@@ -6,46 +6,38 @@ using namespace std;
 class Binary::V24::RVA2 : public Frame4
 {
 protected:
-    virtual bool parse_data() override final;
-
+    virtual bool parseData() override final;
 public:
-    explicit RVA2(Binary::V24 &);
-
-    virtual ~RVA2() override;
+    explicit RVA2(Binary::V24 &t) : Frame4(t) {}
+    virtual ~RVA2() override = default;
 };
 
 //регулировка эха
 class Binary::V24::RVRB : public Frame4
 {
 protected:
-    virtual bool parse_data() override final;
-
+    virtual bool parseData() override final;
 public:
-    explicit RVRB(Binary::V24 &);
-
-    virtual ~RVRB() override;
+    explicit RVRB(Binary::V24 &t) : Frame4(t) {}
+    virtual ~RVRB() override = default;
 };
 
 //кол-во проигрываний
 class Binary::V24::PCNT : public Frame4
 {
 protected:
-    virtual bool parse_data() override final;
-
+    virtual bool parseData() override final;
 public:
-    explicit PCNT(Binary::V24 &);
-
-    virtual ~PCNT() override;
+    explicit PCNT(Binary::V24 &t) : Frame4(t) {}
+    virtual ~PCNT() override = default;
 };
 
 //популярность
 class Binary::V24::POPM : public Frame4
 {
 protected:
-    virtual bool parse_data() override final;
-
+    virtual bool parseData() override final;
 public:
-    explicit POPM(Binary::V24 &);
-
-    virtual ~POPM() override;
+    explicit POPM(Binary::V24 &t) : Frame4(t) {}
+    virtual ~POPM() override = default;
 };

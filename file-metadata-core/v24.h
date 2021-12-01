@@ -12,13 +12,13 @@ protected:
     friend class Parser;
 
 private:
-    V24 (const V24 & ) = delete ;
+    V24 (const V24 & ) = delete;
     V24 & operator = (const V24 &) = delete;
 
-    class padding_handler;
-    class userdef_txt;
-    class userdef_url;
-    class unknown_frame;
+    class PaddingHandler;
+    class UserdefTxt;
+    class UserdefUrl;
+    class UnknownFrame;
     class UFID;
     class TIT1;
     class TIT2;
@@ -102,15 +102,17 @@ private:
     class ASPI;
 
 protected:
-    virtual bool parse_extended_header() override final;
+    virtual bool parseExtendedHeader() override final;
 
-    virtual bool parse_header() override final;
+    virtual bool parseHeader() override final;
 
-    virtual bool parse_data() override final;
+    virtual bool handleCrc() override final;
 
-    bool set_crc();
+    virtual void actualParse() override final;
 
-    bool set_restrictions();
+    bool setCrc();
+
+    bool setRestrictions();
 
 public:
     explicit V24(Binary & file);//объект создаётся после проверки значений версии и ревизии

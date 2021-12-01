@@ -6,44 +6,49 @@ using namespace std;
 class Tag34 : public Tag
 {
 protected:
-    bool experimental_tag{false};
-    bool footer_presence{false};
-    bool update{false};
-    mutable File_contents content{};//mutable - костыль, чтобы можно было переопределять const virtual функции
-    ulong size_of_extended_header{0};
-    pair<ulong, bool> expected_crc{make_pair(0,false)};
-    Encryption_method_markers encryption_info;
-    Group_markers grouping_info;
+    bool experimentalTag{false};
+    bool footerPresence{false};
+    mutable FileContents content{};//mutable - костыль, чтобы можно было переопределять const virtual функции
+    ulong sizeOfExtendedHeader{0};
+    pair<ulong, bool> expectedCrc{make_pair(0,false)};
+    EncryptionMethodMarkers encryptionInfo;
+    GroupMarkers groupingInfo;
 
 private:
     Tag34(const Tag34 &) = delete;
     Tag34 & operator = (const Tag34 &) = delete;
 
 protected:
-    virtual bool parse_extended_header() = 0;
+    virtual bool parseExtendedHeader() = 0;
 
-    virtual string get_frame_id() override final;
+    virtual string getFrameId() override final;
 
     virtual long long pos() const override final;
 
     virtual void shift(long long) const override final;
 
+    virtual bool handleCrc() = 0;
+
+    virtual void actualParse() = 0;
+
+    virtual bool parseData() override final;
+
 public:
     explicit Tag34(Binary & f);
 
-    Encryption_method_markers & encr_info();
+    EncryptionMethodMarkers & encrInfo();
 
-    Group_markers & group_info();
+    GroupMarkers & groupInfo();
 
-    static bool is_userdef_url(const char * const);
+    static bool isUserdefUrl(const char *const);
 
-    static bool correct_id(const char * const);
+    static bool correctId(const char *const);
 
-    static bool is_free_frame(const char * const);
+    static bool isFreeFrame(const char *const);
 
-    bool has_preextracted_data() const;
+    bool hasPreextractedData() const;
 
-    File_contents & get_content();
+    FileContents & getContent();
 
     virtual ~Tag34() override;
 };

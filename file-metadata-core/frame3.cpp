@@ -5,45 +5,45 @@ Frame3::Frame3(Binary::V23 &t)
     : Frame34(t)
     , tag(t)
 {
-    if (tag.has_preextracted_data())
+    if (tag.hasPreextractedData())
     {
-        start_position = tag.get_content().pos() - 4;
-        end_position = start_position + 4;
+        startPosition = tag.getContent().pos() - 4;
+        endPosition = startPosition + 4;
     }
 }
 
 Frame3::~Frame3() = default;
 
-bool Frame3::parse_header()
+bool Frame3::parseHeader()
 {
-    int number_of_length_bytes = set_length([this](int &count)
+    int number_of_length_bytes = setLength([this](int &count)
                                             {
                                                 return this->getb(count);
                                             }).first;
     int extra_data_size = 0, number_of_flag_bytes = 0;
 
-    data_length = length;
+    dataLength = length;
 
     mByte status = getb(number_of_flag_bytes);
-    frame_status.tag_alter_preservation = !status.test(7);
-    frame_status.file_alter_preservation = !status.test(6);
-    frame_status.read_only = status.test(5);
+    frameStatus.tagAlterPreservation = !status.test(7);
+    frameStatus.fileAlterPreservation = !status.test(6);
+    frameStatus.readOnly = status.test(5);
 
     mByte format = getb(number_of_flag_bytes);
 
-    end_position = start_position + 4 + number_of_length_bytes + number_of_flag_bytes + length;
+    endPosition = startPosition + 4 + number_of_length_bytes + number_of_flag_bytes + length;
 
     for (unsigned i = 0;i < 4;++i)
         if (format.test(i))
             return false;
 
-    frame_format.compression_info.second = format.test(7);
-    if (frame_format.compression_info.second)
+    frameFormat.compressionInfo.second = format.test(7);
+    if (frameFormat.compressionInfo.second)
         for (int i = 3;i >= 0;--i)
-            frame_format.compression_info.first += static_cast<unsigned long>(getb(extra_data_size))*power(256,i);
+            frameFormat.compressionInfo.first += static_cast<unsigned long>(getb(extra_data_size))*power(256,i);
 
-    frame_format.encryption = format.test(6);
-    if (frame_format.encryption)
+    frameFormat.encryption = format.test(6);
+    if (frameFormat.encryption)
     {
         uchar mark = getb(extra_data_size);
         if (Frame3::is_group_or_encr_mark(mark))
@@ -53,8 +53,8 @@ bool Frame3::parse_header()
         }
     }
 
-    frame_format.group_id_presence = format.test(5);
-    if (frame_format.group_id_presence)
+    frameFormat.groupIdPresence = format.test(5);
+    if (frameFormat.groupIdPresence)
     {
         uchar mark = getb(extra_data_size);
         if (Frame3::is_group_or_encr_mark(mark))
@@ -64,63 +64,51 @@ bool Frame3::parse_header()
         }
     }
 
-    data_length -= extra_data_size;
+    dataLength -= extra_data_size;
 
     return true;
 }
 
-bool Frame3::set_string_encoding()
-{
-    uchar enc_byte = getb();
-    switch (enc_byte)
-    {
-    case 0:
-        encoding = iso_8859_1;
-        return true;
-
-    case 1:
-    {
-        Byte_order bo = get_BOM();
-        switch (bo)
-        {
-        case big_endian:
-            encoding = ucs_2be;
-            return true;
-        case little_endian:
-            encoding = ucs_2le;
-            return true;
-        case none:
-            encoding = not_given;
-            return false;
-        }
-    }
-
-    default:
-        encoding = not_given;
-        return false;
-    }
-}
-
-bool Frame3::is_group_or_encr_mark(uchar mark)
+bool Frame3::isGroupOrEncrMark(uchar mark)
 {
     return mark >= 128;
 }
 
-uchar Frame3::get_group_mark() const
+uchar Frame3::getGroupMark() const
 {
     uchar mark = getb();
-    if (Frame3::is_group_or_encr_mark(mark))
+    if (Frame3::isGroupOrEncrMark(mark))
         return mark;
     else
         return 0;
 }
 
-bool Frame3::tag_has_content() const
+bool Frame3::tagHasContent() const
 {
-    return tag.has_preextracted_data();
+    return tag.hasPreextractedData();
 }
 
-File_contents & Frame3::tags_content() const
+FileContents & Frame3::tagsContent() const
 {
-    return tag.get_content();
+    return tag.getContent();
+}
+
+QString Frame3::getEncodingDependentString(FileContents &c) const
+{
+    return c.getEncodingDependentString(three);
+}
+
+QString Frame3::getEncodingDependentString(FileContents &c, const long long &dur) const
+{
+    return c.getEncodingDependentString(three, dur);
+}
+
+QString Frame3::getEncodingDependentString(bool) const//фиктивный аргумент
+{
+    return FileHolder::getEncodingDependentString(three);
+}
+
+QString Frame3::getEncodingDependentString(bool, const long long &dur) const//фиктивный аргумент
+{
+    return FileHolder::getEncodingDependentString(three, dur);
 }

@@ -3,213 +3,201 @@ using namespace std;
 
 Frame34::Frame34(Tag &t)
     : Frame(t)
-    , frame_status()
-    , frame_format()
+    , frameStatus()
+    , frameFormat()
 {}
 
 Frame34::~Frame34() = default;
 
 bool Frame34::parse()//переделать
 {
-    if (parse_header())
+    if (parseHeader())
     {
-        if (frame_format.encryption)
+        if (frameFormat.encryption)
             return skip();
         else
         {
-            check_compression();
-            return parse_data();
+            checkCompression();
+            return parseData();
         }
     }
     else
         return !skip();
 }
 
-Frame_format & Frame34::get_format()
+FrameFormat & Frame34::getFormat()
 {
-    return frame_format;
+    return frameFormat;
 }
 
-Frame_status & Frame34::get_status()
+FrameStatus & Frame34::getStatus()
 {
-    return frame_status;
+    return frameStatus;
 }
 
-const Frame_format & Frame34::get_format() const
+const FrameFormat & Frame34::getFormat() const
 {
-    return frame_format;
+    return frameFormat;
 }
 
-const Frame_status & Frame34::get_status() const
+const FrameStatus & Frame34::getStatus() const
 {
-    return frame_status;
+    return frameStatus;
 }
 
-Byte_order Frame34::get_BOM() const
+ByteOrder Frame34::getBOM() const
 {
     if (content)
-        return content.get_BOM();
+        return content.getBOM();
     else
     {
-        if (tag_has_content())
-            return tags_content().get_BOM();
+        if (tagHasContent())
+            return tagsContent().getBOM();
         else
-            return File_holder::get_BOM();
+            return FileHolder::getBOM();
     }
 }
 
-QString Frame34::get_iso8859_str() const
+QString Frame34::getIso8859Str() const
 {
     if (content)
-        return content.get_iso8859_str();
+        return content.getIso8859Str();
     else
     {
-        if (tag_has_content())
-            return tags_content().get_iso8859_str();
+        if (tagHasContent())
+            return tagsContent().getIso8859Str();
         else
-            return File_holder::get_iso8859_str();
+            return FileHolder::getIso8859Str();
     }
 }
 
-QString Frame34::get_iso8859_str(const long long & dur) const
+QString Frame34::getIso8859Str(const long long &dur) const
 {
     if (content)
-        return content.get_iso8859_str(dur);
+        return content.getIso8859Str(dur);
     else
     {
-        if (tag_has_content())
-            return tags_content().get_iso8859_str(dur);
+        if (tagHasContent())
+            return tagsContent().getIso8859Str(dur);
         else
-            return File_holder::get_iso8859_str(dur);
+            return FileHolder::getIso8859Str(dur);
     }
 }
 
-QString Frame34::get_utf16_str(Byte_order bo) const//не чекает BOM
+QString Frame34::getUtf16Str(ByteOrder bo) const//не чекает BOM
 {
     if (content)
-        return content.get_utf16_str(bo);
+        return content.getUtf16Str(bo);
     else
     {
-        if (tag_has_content())
-            return tags_content().get_utf16_str(bo);
+        if (tagHasContent())
+            return tagsContent().getUtf16Str(bo);
         else
-            return File_holder::get_utf16_str(bo);
+            return FileHolder::getUtf16Str(bo);
     }
 }
 
-QString Frame34::get_utf16_str(Byte_order bo, const long long & dur) const//не чекает BOM
+QString Frame34::getUtf16Str(ByteOrder bo, const long long &dur) const//не чекает BOM
 {
     if (content)
-        return content.get_utf16_str(bo, dur);
+        return content.getUtf16Str(bo, dur);
     else
     {
-        if (tag_has_content())
-            return tags_content().get_utf16_str(bo, dur);
+        if (tagHasContent())
+            return tagsContent().getUtf16Str(bo, dur);
         else
-            return File_holder::get_utf16_str(bo, dur);
+            return FileHolder::getUtf16Str(bo, dur);
     }
 }
 
-QString Frame34::get_utf8_str() const
+QString Frame34::getUtf8Str() const
 {
     if (content)
-        return content.get_utf8_str();
+        return content.getUtf8Str();
     else
     {
-        if (tag_has_content())
-            return tags_content().get_utf8_str();
+        if (tagHasContent())
+            return tagsContent().getUtf8Str();
         else
-            return File_holder::get_utf8_str();
+            return FileHolder::getUtf8Str();
     }
 }
 
-QString Frame34::get_utf8_str(const long long & dur) const
+QString Frame34::getUtf8Str(const long long &dur) const
 {
     if (content)
-        return content.get_utf8_str(dur);
+        return content.getUtf8Str(dur);
     else
     {
-        if (tag_has_content())
-            return tags_content().get_utf8_str(dur);
+        if (tagHasContent())
+            return tagsContent().getUtf8Str(dur);
         else
-            return File_holder::get_utf8_str(dur);
+            return FileHolder::getUtf8Str(dur);
     }
 }
 
-QString Frame34::get_ucs2_str(Byte_order bo) const//не чекает BOM
+QString Frame34::getUcs2Str(ByteOrder bo) const//не чекает BOM
 {
     if (content)
-        return content.get_ucs2_str(bo);
+        return content.getUcs2Str(bo);
     else
     {
-        if (tag_has_content())
-            return tags_content().get_ucs2_str(bo);
+        if (tagHasContent())
+            return tagsContent().getUcs2Str(bo);
         else
-            return File_holder::get_ucs2_str(bo);
+            return FileHolder::getUcs2Str(bo);
     }
 }
 
-QString Frame34::get_ucs2_str(Byte_order bo, const long long & dur) const//не чекает BOM
+QString Frame34::getUcs2Str(ByteOrder bo, const long long &dur) const//не чекает BOM
 {
     if (content)
-        return content.get_ucs2_str(bo, dur);
+        return content.getUcs2Str(bo, dur);
     else
     {
-        if (tag_has_content())
-            return tags_content().get_ucs2_str(bo, dur);
+        if (tagHasContent())
+            return tagsContent().getUcs2Str(bo, dur);
         else
-            return File_holder::get_ucs2_str(bo, dur);
+            return FileHolder::getUcs2Str(bo, dur);
     }
 }
 
-QString Frame34::get_encoding_dependent_string(String_encoding enc) const
+QString Frame34::getEncodingDependentString() const
 {
     if (content)
-        return content.get_encoding_dependent_string(enc, [this]()
-                                                            {
-                                                                return  this->content.skip();
-                                                            });
+        return getEncodingDependentString(content);
     else
     {
-        if (tag_has_content())
-            return tags_content().get_encoding_dependent_string(enc, [this]()
-                                                                        {
-                                                                            return  this->content.skip();
-                                                                        });
+        if (tagHasContent())
+            return getEncodingDependentString(tagsContent());
         else
-            return File_holder::get_encoding_dependent_string(enc);
+            return getEncodingDependentString(true);
     }
 }
 
-QString Frame34::get_encoding_dependent_string(String_encoding enc, const long long & dur) const
+QString Frame34::getEncodingDependentString(const long long &dur) const
 {
     if (content)
-        return content.get_encoding_dependent_string(enc, dur, [this]()
-                                                                {
-                                                                    return  this->content.skip();
-                                                                });
+        return getEncodingDependentString(content, dur);
     else
     {
-        if (tag_has_content())
-            return tags_content().get_encoding_dependent_string(enc, dur, [this]()
-                                                                            {
-                                                                                return  this->content.skip();
-                                                                            });
+        if (tagHasContent())
+            return getEncodingDependentString(tagsContent(), dur);
         else
-            return File_holder::get_encoding_dependent_string(enc, dur);
+            return getEncodingDependentString(true, dur);
     }
 }
 
-QByteArray Frame34::get_binary_till_end() const
+QByteArray Frame34::getBinaryTillEnd() const
 {
     if (content)
-        return content.get_binary_till_end();
+        return content.getBinaryTillEnd();
     else
     {
-        if (tag_has_content())
-            return tags_content().get_binary_till_end();
+        if (tagHasContent())
+            return tagsContent().getBinaryTillEnd();
         else
-            return File_holder::get_binary_till_end();
+            return FileHolder::getBinaryTillEnd();
     }
 }
 
@@ -219,10 +207,13 @@ bool Frame34::skip() const
         return content.skip();
     else
     {
-        if (tag_has_content())
-            return tags_content().skip();
+        if (tagHasContent())
+        {
+            tagsContent().seek(endPosition);
+            return true;
+        }
         else
-            return File_holder::skip();
+            return FileHolder::skip();
     }
 }
 
@@ -232,10 +223,10 @@ long long Frame34::pos() const
         return content.pos();
     else
     {
-        if (tag_has_content())
-            return tags_content().pos();
+        if (tagHasContent())
+            return tagsContent().pos();
         else
-            return File_holder::pos();
+            return FileHolder::pos();
     }
 }
 
@@ -245,10 +236,10 @@ void Frame34::seek(long long pos) const
         return content.seek(pos);
     else
     {
-        if (tag_has_content())
-            return tags_content().seek(pos);
+        if (tagHasContent())
+            return tagsContent().seek(pos);
         else
-            return File_holder::seek(pos);
+            return FileHolder::seek(pos);
     }
 }
 
@@ -258,10 +249,10 @@ void Frame34::shift(long long offset) const
         return content.shift(offset);
     else
     {
-        if (tag_has_content())
-            return tags_content().shift(offset);
+        if (tagHasContent())
+            return tagsContent().shift(offset);
         else
-            return File_holder::shift(offset);
+            return FileHolder::shift(offset);
     }
 }
 
@@ -271,10 +262,10 @@ bool Frame34::end() const
         return content.end();
     else
     {
-        if (tag_has_content())
-            return tags_content().end();
+        if (tagHasContent())
+            return tagsContent().end();
         else
-            return File_holder::end();
+            return FileHolder::end();
     }
 }
 
@@ -284,23 +275,23 @@ long long Frame34::size() const
         return content.size();
     else
     {
-        if (tag_has_content())
-            return tags_content().size();
+        if (tagHasContent())
+            return tagsContent().size();
         else
-            return File_holder::size();
+            return FileHolder::size();
     }
 }
 
-string Frame34::get_symbols(int amount)
+string Frame34::getSymbols(int amount)
 {
     if (content)
-        return content.get_symbols(amount);
+        return content.getSymbols(amount);
     else
     {
-        if (tag_has_content())
-            return tags_content().get_symbols(amount);
+        if (tagHasContent())
+            return tagsContent().getSymbols(amount);
         else
-            return File_holder::get_symbols(amount);
+            return FileHolder::getSymbols(amount);
     }
 }
 
@@ -310,10 +301,10 @@ char Frame34::ch() const
         return content.ch();
     else
     {
-        if (tag_has_content())
-            return tags_content().ch();
+        if (tagHasContent())
+            return tagsContent().ch();
         else
-            return File_holder::ch();
+            return FileHolder::ch();
     }
 }
 
@@ -323,10 +314,10 @@ uchar Frame34::get() const
         return content.get();
     else
     {
-        if (tag_has_content())
-            return tags_content().get();
+        if (tagHasContent())
+            return tagsContent().get();
         else
-            return File_holder::get();
+            return FileHolder::get();
     }
 }
 
@@ -336,10 +327,10 @@ char Frame34::uch() const
         return content.ch();
     else
     {
-        if (tag_has_content())
-            return tags_content().ch();
+        if (tagHasContent())
+            return tagsContent().ch();
         else
-            return File_holder::uch();
+            return FileHolder::uch();
     }
 }
 
@@ -349,10 +340,10 @@ uchar Frame34::getb() const
         return content.get();
     else
     {
-        if (tag_has_content())
-            return tags_content().get();
+        if (tagHasContent())
+            return tagsContent().get();
         else
-            return File_holder::getb();
+            return FileHolder::getb();
     }
 }
 
@@ -362,10 +353,10 @@ char Frame34::ch(int &count) const
         return content.ch(count);
     else
     {
-        if (tag_has_content())
-            return tags_content().ch(count);
+        if (tagHasContent())
+            return tagsContent().ch(count);
         else
-            return File_holder::ch(count);
+            return FileHolder::ch(count);
     }
 }
 
@@ -375,10 +366,10 @@ uchar Frame34::get(int &count) const
         return content.get(count);
     else
     {
-        if (tag_has_content())
-            return tags_content().get(count);
+        if (tagHasContent())
+            return tagsContent().get(count);
         else
-            return File_holder::get(count);
+            return FileHolder::get(count);
     }
 }
 
@@ -388,10 +379,10 @@ char Frame34::uch(int &count) const
         return content.ch(count);
     else
     {
-        if (tag_has_content())
-            return tags_content().ch(count);
+        if (tagHasContent())
+            return tagsContent().ch(count);
         else
-            return File_holder::uch(count);
+            return FileHolder::uch(count);
     }
 }
 
@@ -401,32 +392,32 @@ uchar Frame34::getb(int &count) const
         return content.get(count);
     else
     {
-        if (tag_has_content())
-            return tags_content().get(count);
+        if (tagHasContent())
+            return tagsContent().get(count);
         else
-            return File_holder::getb(count);
+            return FileHolder::getb(count);
     }
 }
 
-void Frame34::check_compression()//вызывается, когда хедер уже пропаршен
+void Frame34::checkCompression()//вызывается, когда хедер уже пропаршен
 {
-    if (frame_format.compression_info.second)//если фрейм сжат
+    if (frameFormat.compressionInfo.second)//если фрейм сжат
     {
-        if (tag_has_content())
+        if (tagHasContent())
         {
-            if (!content.decompress_raw_data(tags_content(),length,frame_format.compression_info.first))
+            if (!content.decompressRawData(tagsContent(),length,frameFormat.compressionInfo.first))
                 qCritical() << "фрейм не смог достать байты из хранилища тега\n";
         }
         else
         {
-            if (!content.decompress_raw_data(file,unsynch,length,frame_format.compression_info.first))
+            if (!content.decompressRawData(file,unsynch,length,frameFormat.compressionInfo.first))
                 qCritical() << "фрейм не смог достать байты из файла\n";
         }
 
         if (content)
         {
             ulong len_diff = length - content.size();
-            end_position -= len_diff;
+            endPosition -= len_diff;
             length = content.size();
         }
     }

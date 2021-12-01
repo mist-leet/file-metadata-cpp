@@ -6,17 +6,17 @@ using namespace std;
 class Frame34 : public Frame
 {
 protected:
-    Frame_status frame_status{};
-    Frame_format frame_format{};
-    mutable File_contents content{};//mutable - это костыль, который пришлось поставить, чтобы переопределить const virtual функцию
-    unsigned long data_length{0};//длина информации без учёта расширенного заголовка
+    FrameStatus frameStatus{};
+    FrameFormat frameFormat{};
+    mutable FileContents content{};//mutable - это костыль, который пришлось поставить, чтобы переопределить const virtual функцию
+    unsigned long dataLength{0};//длина информации без учёта расширенного заголовка
 
 private:
     Frame34(const Frame34 &) = delete;//ЗАПРЕЩЕНО
     Frame34 & operator = (const Frame34 &) = delete;//ЗАПРЕЩЕНО
 
 protected:
-    void check_compression();
+    void checkCompression();
 
     virtual char ch() const override final;
 
@@ -34,29 +34,37 @@ protected:
 
     uchar getb(int &) const;
 
-    virtual Byte_order get_BOM() const override final;
+    virtual ByteOrder getBOM() const override final;
 
-    virtual QString get_iso8859_str() const override final;
+    virtual QString getIso8859Str() const override final;
 
-    virtual QString get_iso8859_str(const long long &) const override final;
+    virtual QString getIso8859Str(const long long &) const override final;
 
-    virtual QString get_utf16_str(Byte_order) const override final;//не чекает BOM
+    virtual QString getUtf16Str(ByteOrder) const override final;//не чекает BOM
 
-    virtual QString get_utf16_str(Byte_order, const long long &) const override final;//не чекает BOM
+    virtual QString getUtf16Str(ByteOrder, const long long &) const override final;//не чекает BOM
 
-    virtual QString get_utf8_str() const override final;
+    virtual QString getUtf8Str() const override final;
 
-    virtual QString get_utf8_str(const long long &) const override final;
+    virtual QString getUtf8Str(const long long &) const override final;
 
-    virtual QString get_ucs2_str(Byte_order) const override final;//не чекает BOM
+    virtual QString getUcs2Str(ByteOrder) const override final;//не чекает BOM
 
-    virtual QString get_ucs2_str(Byte_order, const long long &) const override final;//не чекает BOM
+    virtual QString getUcs2Str(ByteOrder, const long long &) const override final;//не чекает BOM
 
-    virtual QString get_encoding_dependent_string(String_encoding) const override final;
+    virtual QString getEncodingDependentString(FileContents &) const = 0;
 
-    virtual QString get_encoding_dependent_string(String_encoding, const long long &) const override final;
+    virtual QString getEncodingDependentString(FileContents &, const long long &) const = 0;
 
-    virtual QByteArray get_binary_till_end() const override final;
+    virtual QString getEncodingDependentString(bool) const = 0;
+
+    virtual QString getEncodingDependentString(bool, const long long &) const = 0;
+
+    virtual QString getEncodingDependentString() const override final;
+
+    virtual QString getEncodingDependentString(const long long &) const override final;
+
+    virtual QByteArray getBinaryTillEnd() const override final;
 
     virtual bool skip() const override final;
 
@@ -70,24 +78,24 @@ protected:
 
     virtual long long size() const override final;
 
-    virtual string get_symbols(int) override final;
+    virtual string getSymbols(int) override final;
 
-    virtual bool tag_has_content() const = 0;
+    virtual bool tagHasContent() const = 0;
 
-    virtual File_contents & tags_content() const = 0;
+    virtual FileContents & tagsContent() const = 0;
 
 public:
     explicit Frame34(Tag &);
 
-    uchar get_group_mark() const;
+    uchar getGroupMark() const;
 
-    Frame_format & get_format();
+    FrameFormat & getFormat();
 
-    Frame_status & get_status();
+    const FrameFormat & getFormat() const;
 
-    const Frame_format & get_format() const;
+    FrameStatus & getStatus();
 
-    const Frame_status & get_status() const;
+    const FrameStatus & getStatus() const;
 
     virtual bool parse() override final;
 

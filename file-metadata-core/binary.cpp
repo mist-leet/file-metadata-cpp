@@ -2,11 +2,11 @@
 #include "v1.h"
 using namespace std;
 
-Binary::Binary(const QString & path)
+Binary::Binary(const QString &path)
     : QFile(path)
 {
-    successfully_opened = QFile::open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
-    if (successfully_opened)
+    successfullyOpened = QFile::open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
+    if (successfullyOpened)
         seek(0);
 }
 
@@ -19,18 +19,18 @@ Binary::~Binary()
     close();
 }
 
-bool Binary::openf(const QString & path)
+bool Binary::openf(const QString &path)
 {
     setFileName(path);
-    successfully_opened = QFile::open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
-    if (successfully_opened)
+    successfullyOpened = QFile::open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
+    if (successfullyOpened)
         seek(0);
-    return successfully_opened;
+    return successfullyOpened;
 }
 
 Binary::operator bool() const
 {
-    return successfully_opened;
+    return successfullyOpened;
 }
 
 Binary & Binary::operator << (const string & s)
@@ -51,19 +51,19 @@ Binary & Binary::operator >> (char & c)
     return *this;
 }
 
-const File_metadata & Binary::get_data() const
+const FileMetadata & Binary::getData() const
 {
     return data;
 }
 
-File_metadata & Binary::get_data()
+FileMetadata & Binary::getData()
 {
     return data;
 }
 
-bool Binary::has_info() const
+bool Binary::hasInfo() const
 {
-    return data.has_info();
+    return data.hasInfo();
 }
 
 void Binary::shift(long long offset)
@@ -81,16 +81,16 @@ void Binary::shift(long long offset)
     }
 }
 
-void Binary::one_byte_back_with_no_check()
+void Binary::oneByteBack()
 {
     seek(pos() - 1);
 }
 
-QByteArray Binary::get_raw_bytes(bool unsynch, ulong amount)
+QByteArray Binary::getBytes(bool unsynch, ulong amount)
 {
-    return ::get_raw_bytes(getChar_lambda
+    return ::getBytes(getCharLambda
                            , unsynch
-                           , one_byte_back_lambda
+                           , oneByteBackLambda
                            , amount);
 }
 
@@ -104,114 +104,115 @@ QByteArray Binary::get_bytes(bool unsynch, ulong amount)
 
 char Binary::ch()
 {
-    return ::ch(getChar_lambda);
+    return ::ch(getCharLambda);
 }
 
 uchar Binary::get()
 {
-    return ::get(getChar_lambda);
+    return ::get(getCharLambda);
 }
 
 char Binary::uch(bool unsynch)
 {
-    return ::uch(getChar_lambda
+    return ::uch(getCharLambda
                  , unsynch
-                 , one_byte_back_lambda);
+                 , oneByteBackLambda);
 }
 
 uchar Binary::getb(bool unsynch)
 {
-    return ::getb(getChar_lambda
+    return ::getb(getCharLambda
                   , unsynch
-                  , one_byte_back_lambda);
+                  , oneByteBackLambda);
 }
 
-Byte_order Binary::get_BOM(bool unsynch)
+ByteOrder Binary::getBOM(bool unsynch)
 {
-    return ::get_BOM(getChar_lambda
+    return ::getBOM(getCharLambda
                      , unsynch
-                     , one_byte_back_lambda);
+                     , oneByteBackLambda);
 }
 
-QString Binary::get_iso8859_str(bool unsynch, const long long & dur)
+QString Binary::getIso8859Str(bool unsynch, const long long &dur)
 {
-    return ::get_iso8859_str(getChar_lambda
+    return ::getIso8859Str(getCharLambda
                              , unsynch
-                             , one_byte_back_lambda
+                             , oneByteBackLambda
                              , dur);
 }
 
-QString Binary::get_utf16_str(bool unsynch, Byte_order bo, const long long & dur)//не чекает BOM
+QString Binary::getUtf16Str(bool unsynch, ByteOrder bo, const long long &dur)//не чекает BOM
 {
-    return ::get_utf16_str(getChar_lambda
+    return ::getUtf16Str(getCharLambda
                            , unsynch
                            , bo
-                           , one_byte_back_lambda
+                           , oneByteBackLambda
                            , dur);
 }
 
-QString Binary::get_utf8_str(bool unsynch, const long long & dur)
+QString Binary::getUtf8Str(bool unsynch, const long long &dur)
 {
-    return ::get_utf8_str(getChar_lambda
+    return ::getUtf8Str(getCharLambda
                           , unsynch
-                          , one_byte_back_lambda
+                          , oneByteBackLambda
                           , dur);
 }
 
-QString Binary::get_ucs2_str(bool unsynch, Byte_order bo, const long long & dur)//не чекает BOM
+QString Binary::getUcs2Str(bool unsynch, ByteOrder bo, const long long &dur)//не чекает BOM
 {
-    return ::get_ucs2_str(getChar_lambda
+    return ::getUcs2Str(getCharLambda
                           , unsynch
                           , bo
-                          , one_byte_back_lambda
+                          , oneByteBackLambda
                           , dur);
 }
 
-QString Binary::get_encoding_dependent_string(bool unsynch, String_encoding enc, const long long & dur, function<bool()> skip_f)
+QString Binary::getEncodingDependentString(bool unsynch, TagVersion v, const long long &dur)
 {
-    return ::get_encoding_dependent_string(getChar_lambda,unsynch,one_byte_back_lambda,dur,enc,skip_f);
+    return ::getEncodingDependentString(getCharLambda, unsynch, oneByteBackLambda, dur,
+                                           getStringEncoding(unsynch,v));
 }
 
-void Binary::parse_from_start()
+void Binary::parseFromStart()
 {
     seek(0);
-    Tag_version v;
+    TagVersion v;
     do
     {
-        v = v2_header();
+        v = v2Header();
         Parser v2(v,*this);
         v2.parse();
-    } while (v != no_tag);
+    } while (v != noTag);
 }
 
-void Binary::parse_from_end()
+void Binary::parseFromEnd()
 {
-    back_from_end(128);//перемещаемся на место предполагаемого тега v1
-    if (check_for("TAG"))//перемещаемся на место предполагаемого футера
-        back_from_end(138);
+    backFromEnd(128);//перемещаемся на место предполагаемого тега v1
+    if (checkFor("TAG"))//перемещаемся на место предполагаемого футера
+        backFromEnd(138);
     else
-        back_from_end(10);
+        backFromEnd(10);
 
-    Tag_version v;
+    TagVersion v;
     qint64 len = 0;
 
     do
     {
-        len = parse_v2_footer();//чекаем длину предполагаемого тега
+        len = parseV2Footer();//чекаем длину предполагаемого тега
         shift(-len - 20);//перемещаемся в начало предполагаемого тега
-        v = v2_header();//чекаем идентификатор хедера предполагаемого тега
+        v = v2Header();//чекаем идентификатор хедера предполагаемого тега
         Parser v2(v,*this);//создаём парсер для предполагаемого тега
         v2.parse();//парсим, если есть что парсить
         shift(-len - 20);//перемещаемся в место, где начинается футер предыдущего тега, если он есть
-    } while (v != no_tag);
+    } while (v != noTag);
 }
 
-void Binary::parse_v1()
+void Binary::parseV1()
 {
-    if (data.needs_v1())
+    if (data.needsV1())
     {
-        back_from_end(128);//перемещаемся на место предполагаемого тега v1
-        if (check_for("TAG"))
+        backFromEnd(128);//перемещаемся на место предполагаемого тега v1
+        if (checkFor("TAG"))
         {
             Parser v1(*this);
             v1.parse();
@@ -219,28 +220,33 @@ void Binary::parse_v1()
     }
 }
 
+StringEncoding Binary::getStringEncoding(bool unsynch, TagVersion v)
+{
+    return ::getStringEncoding(getCharLambda, unsynch, oneByteBackLambda, v);
+}
+
 bool Binary::parse()
 {
-    if (successfully_opened)
+    if (successfullyOpened)
     {
-        parse_from_start();
-        parse_from_end();
-        parse_v1();
-        return data.has_info();
+        parseFromStart();
+        parseFromEnd();
+        parseV1();
+        return data.hasInfo();
     }
     else
         return false;
 }
 
-void Binary::display_info(bool console) const
+void Binary::displayInfo(bool console) const
 {
     if (console)
-        data.display_on_console();
+        data.displayOnConsole();
     else
-        data.display_on_ui();
+        data.displayOnUi();
 }
 
-void Binary::back_from_end(qint64 offset)
+void Binary::backFromEnd(qint64 offset)
 {
     qint64 sz = size();
     if (offset <= sz)
@@ -249,7 +255,7 @@ void Binary::back_from_end(qint64 offset)
         seek(0);
 }
 
-char Binary::ch_backwards()
+char Binary::charBackwards()
 {
     char c;
     getChar(&c);
@@ -257,7 +263,7 @@ char Binary::ch_backwards()
     return c;
 }
 
-bool Binary::check_for(string value)
+bool Binary::checkFor(string value)
 {
     char id[4];
     for (int i = 0;i < 3;++i)
@@ -266,9 +272,9 @@ bool Binary::check_for(string value)
     return !strcmp(id,value.c_str());
 }
 
-Tag_version Binary::v2_header()
+TagVersion Binary::v2Header()
 {
-    if (check_for("ID3"))
+    if (checkFor("ID3"))
     {
         uchar version = get();
         if (get() != 255)
@@ -278,19 +284,19 @@ Tag_version Binary::v2_header()
             case 2:{return two;}
             case 3:{return three;}
             case 4:{return four;}
-            default:{return no_tag;}
+            default:{return noTag;}
             }
         }
         else
-            return no_tag;
+            return noTag;
     }
     else
-        return no_tag;
+        return noTag;
 }
 
-ulong Binary::parse_v2_footer()//возвращает 0, если футер не найден или некорректен
+ulong Binary::parseV2Footer()//возвращает 0, если футер не найден или некорректен
 {
-    if (check_for("3DI"))
+    if (checkFor("3DI"))
     {
         if (get() == 4)
         {

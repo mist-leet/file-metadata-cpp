@@ -3,9 +3,9 @@
 #include "easy_ptr.h"
 using namespace std;
 
-class File_contents
+class FileContents
 {
-    void one_byte_back_with_no_check();
+    void oneByteBack();
 
 protected:
     QByteArray data{};
@@ -21,20 +21,20 @@ protected:
     function<void()> oneByteBackLambda{
                                             [this]()
                                             {
-                                                return this->one_byte_back_with_no_check();
+                                                return this->oneByteBack();
                                             }
                                       };
 
 public:
-    File_contents();
+    FileContents();
 
-    bool set_data_and_check_src(Binary &file, bool unsynch, ulong raw_data_size, ulong expected_crc);//file -> tag
+    bool setDataAndCheckSrc(Binary &file, bool unsynch, ulong raw_data_size, ulong expected_crc);//file -> tag
 
-    bool decompress_raw_data(Binary &file, bool unsynch, ulong raw_data_size, ulong expected_data_size);//file -> frame
+    bool decompressRawData(Binary &file, bool unsynch, ulong raw_data_size, ulong expected_data_size);//file -> frame
 
-    bool decompress_raw_data(File_contents &other_storage, ulong raw_data_size, ulong expected_data_size);//tag -> frame
+    bool decompressRawData(FileContents &other_storage, ulong raw_data_size, ulong expected_data_size);//tag -> frame
 
-    QByteArray share_data(ulong size);
+    QByteArray shareData(ulong size);
 
     bool getChar(char *);
 
@@ -50,29 +50,31 @@ public:
     uchar get(T &);
     /*---</элементарные функции>---*/
 
-    Byte_order get_BOM();
+    ByteOrder getBOM();
 
-    QString get_iso8859_str();
+    QString getIso8859Str();
 
-    QString get_iso8859_str(const long long &);
+    QString getIso8859Str(const long long &);
 
-    QString get_utf16_str(Byte_order);//не чекает BOM
+    QString getUtf16Str(ByteOrder);//не чекает BOM
 
-    QString get_utf16_str(Byte_order, const long long &);//не чекает BOM
+    QString getUtf16Str(ByteOrder, const long long &);//не чекает BOM
 
-    QString get_utf8_str();
+    QString getUtf8Str();
 
-    QString get_utf8_str(const long long &);
+    QString getUtf8Str(const long long &);
 
-    QString get_ucs2_str(Byte_order);//не чекает BOM
+    QString getUcs2Str(ByteOrder);//не чекает BOM
 
-    QString get_ucs2_str(Byte_order, const long long &);//не чекает BOM
+    QString getUcs2Str(ByteOrder, const long long &);//не чекает BOM
 
-    QByteArray get_binary_till_end();
+    QByteArray getBinaryTillEnd();
 
-    QString get_encoding_dependent_string(String_encoding, function<bool()>);//не чекает BOM
+    StringEncoding getStringEncoding(TagVersion);
 
-    QString get_encoding_dependent_string(String_encoding, const long long &, function<bool()>);//не чекает BOM
+    QString getEncodingDependentString(TagVersion);
+
+    QString getEncodingDependentString(TagVersion, const long long &);
 
     bool skip();
 
@@ -84,28 +86,28 @@ public:
 
     bool end() const;
 
-    int lastpos() const;
+    int lastPos() const;
 
     int size() const;
 
-    string get_symbols(int);
+    string getSymbols(int);
 
-    string get_frame34_id();
+    string getFrame34Id();
 
     operator bool () const;
 
-    virtual ~File_contents();
+    virtual ~FileContents();
 };
 
 template<typename T>
-char File_contents::ch(T &count)
+char FileContents::ch(T &count)
 {
     return ::ch(getCharLambda
                 , count);
 }
 
 template<typename T>
-uchar File_contents::get(T &count)
+uchar FileContents::get(T &count)
 {
     return ::get(getCharLambda
                  , count);

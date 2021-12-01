@@ -8,7 +8,7 @@ Binary::V24::V24(Binary &f)
 
 Binary::V24::~V24() = default;
 
-bool Binary::V24::parse_header()//парсит расширенный заголовок, если он есть
+bool Binary::V24::parseHeader()//парсит расширенный заголовок, если он есть
 {
     mByte flags = get();
     for (unsigned i = 0;i < 4;++i)
@@ -17,135 +17,134 @@ bool Binary::V24::parse_header()//парсит расширенный загол
 
     unsynch = flags.test(7);
     bool extdh = flags.test(6);
-    experimental_tag = flags.test(5);
-    footer_presence = flags.test(4);
+    experimentalTag = flags.test(5);
+    footerPresence = flags.test(4);
 
-    bool correctness = set_length([this](int &count)
+    bool correctness = setLength([this](int &count)
                                     {
-                                        return this->File_holder::get(count);
+                                        return this->FileHolder::get(count);
                                     }).second;
-    if (footer_presence)
+    if (footerPresence)
     {
-        end_position = start_position + length + 20;
-        extreme_position_of_frame = end_position - 21;
+        endPosition = startPosition + length + 20;
+        extremePositionOfFrame = endPosition - 21;
     }
     else
     {
-        end_position = start_position + length + 10;
-        extreme_position_of_frame = end_position - 11;
+        endPosition = startPosition + length + 10;
+        extremePositionOfFrame = endPosition - 11;
     }
     if (correctness && extdh)
-        correctness = parse_extended_header();
+        correctness = parseExtendedHeader();
     return correctness;
 }
 
-bool Binary::V24::parse_extended_header()
+bool Binary::V24::parseExtendedHeader()
 {
     for (int i = 0;i < 4;++i)//длину тега можно узнать другим образом, поэтому байты длины можно игнорировать
-        if (get(size_of_extended_header) > 127)
+        if (get(sizeOfExtendedHeader) > 127)
             return false;
 
-    if (get(size_of_extended_header) != 1)//в стандарте определено только значение 1
+    if (get(sizeOfExtendedHeader) != 1)//в стандарте определено только значение 1
         return false;
 
-    mByte flags = get(size_of_extended_header);
+    mByte flags = get(sizeOfExtendedHeader);
 
-    update = flags.test(6);
-    if (update)
-        if (get(size_of_extended_header) != 0)
-            return (update = false);
+    if (flags.test(6))
+        if (get(sizeOfExtendedHeader) != 0)
+            return false;
 
-    expected_crc.second = flags.test(5);
-    if (expected_crc.second)
-        if (!set_crc())
-            return (update = expected_crc.second = false);
+    expectedCrc.second = flags.test(5);
+    if (expectedCrc.second)
+        if (!setCrc())
+            return (expectedCrc.second = false);
 
     restrictions.presence = flags.test(4);
     if (restrictions.presence)
-        if (!set_restrictions())
-            return (update = expected_crc.second = restrictions.presence = false);
+        if (!setRestrictions())
+            return (expectedCrc.second = restrictions.presence = false);
 
     return true;
 }
 
-bool Binary::V24::set_crc()
+bool Binary::V24::setCrc()
 {    
-    if (get(size_of_extended_header) != 5)
+    if (get(sizeOfExtendedHeader) != 5)
         return false;
 
-    expected_crc.second = true;
+    expectedCrc.second = true;
 
     unsigned char buf[5];
 
-    if ((buf[4] = get(size_of_extended_header)) > 15)
-        expected_crc.second = false;
+    if ((buf[4] = get(sizeOfExtendedHeader)) > 15)
+        expectedCrc.second = false;
 
     for (int i = 3;i >= 0;--i)
-        if ((buf[i] = get(size_of_extended_header)) > 127)
-            expected_crc.second = false;
+        if ((buf[i] = get(sizeOfExtendedHeader)) > 127)
+            expectedCrc.second = false;
 
-    if (expected_crc.second)
+    if (expectedCrc.second)
         for (int i = 4;i >= 0;--i)
-            expected_crc.first += buf[i]*static_cast<unsigned long>(power(128,i));
+            expectedCrc.first += buf[i]*static_cast<unsigned long>(power(128,i));
 
     return true;
 }
 
-bool Binary::V24::set_restrictions()
+bool Binary::V24::setRestrictions()
 {
-    if (get(size_of_extended_header) != 1)
+    if (get(sizeOfExtendedHeader) != 1)
         return false;
     else
         restrictions.presence = true;
 
-    mByte r = getb(size_of_extended_header);
+    mByte r = getb(sizeOfExtendedHeader);
 
     //ограничения размера и количества фреймов
     if (r.test(7))
     {
-        restrictions.max_frames = 32;
+        restrictions.maxFrames = 32;
         if (r.test(6))
-            {restrictions.max_size = kbyte(4);}
+            {restrictions.maxSize = kbyte(4);}
         else
-            {restrictions.max_size = kbyte(40);}
+            {restrictions.maxSize = kbyte(40);}
     }
     else
     {
         if (r.test(6))
         {
-            restrictions.max_frames = 64;
-            restrictions.max_size = kbyte(128);
+            restrictions.maxFrames = 64;
+            restrictions.maxSize = kbyte(128);
         }
         if (!r.test(6))
         {
-            restrictions.max_frames = 128;
-            restrictions.max_size = mbyte();
+            restrictions.maxFrames = 128;
+            restrictions.maxSize = mbyte();
         }
     }
     //ограничения по кодировке текста
-    restrictions.encoding_rest = r.test(5);
+    restrictions.encodingRest = r.test(5);
     //ограничения по количеству символов в одном фрейме
     if (r.test(4))
     {
         if (r.test(3))
-            restrictions.max_char_per_frame = 30;
+            restrictions.maxCharPerFrame = 30;
         else
-            restrictions.max_char_per_frame = 128;
+            restrictions.maxCharPerFrame = 128;
     }
     else //по дефолту стоит максимально возможный размер
         if (r.test(3))
-            restrictions.max_char_per_frame = 1024;
+            restrictions.maxCharPerFrame = 1024;
     //ограничения по кодировке изображений
-    restrictions.image_encoding_rest = r.test(2);
+    restrictions.imageEncodingRest = r.test(2);
     //ограничения по размеру изображений
-    restrictions.image_size_rest = make_pair(r.test(1),r.test(0));
+    restrictions.imageSizeRest = make_pair(r.test(1),r.test(0));
 
     return true;
 }
 
-bool Binary::V24::is_userdef_txt(const char * const id)
+bool Binary::V24::isUserdefTxt(const char *const id)
 {
-    return  (id[0] == 'T' && Binary::V24::correct_id(id) && strcmp(id, "TIT1") && strcmp(id, "TIT2") && strcmp(id, "TIT3")
+    return  (id[0] == 'T' && Binary::V24::correctId(id) && strcmp(id, "TIT1") && strcmp(id, "TIT2") && strcmp(id, "TIT3")
             && strcmp(id, "TALB") && strcmp(id, "TOAL")
      && strcmp(id, "TRCK") && strcmp(id, "TPOS") && strcmp(id, "TSST") && strcmp(id, "TSRC") && strcmp(id, "TPE1")
      && strcmp(id, "TPE2") && strcmp(id, "TPE3") && strcmp(id, "TPE4") && strcmp(id, "TOPE") && strcmp(id, "TEXT")
@@ -157,38 +156,31 @@ bool Binary::V24::is_userdef_txt(const char * const id)
      && strcmp(id, "TDTG") && strcmp(id, "TSSE") && strcmp(id, "TSOA") && strcmp(id, "TSOP") && strcmp(id, "TSOT"));
 }
 
-bool Binary::V24::parse_data()
+bool Binary::V24::handleCrc()
 {
-    bool fine_crc = true;
-    if (expected_crc.second)
+    ulong data_len = endPosition - pos();
+    if (footerPresence)
+        data_len -= 10;
+
+    if (!content.setDataAndCheckSrc(file, unsynch, data_len, expectedCrc.first))
     {
-        ulong data_len = end_position - pos();
-        if (footer_presence)
-            data_len -= 10;
-
-        if (!content.set_data_and_check_src(file, unsynch, data_len, expected_crc.first))
-        {
-            qCritical() << "посчитанный CRC32 не совпадает с переданным\n";
-            fine_crc = false;
-        }
-        else
-        {
-            extreme_position_of_frame = content.size() - 11;
-        }
+        qCritical() << "посчитанный CRC32 не совпадает с переданным\n";
+        return false;
     }
-
-    if (fine_crc)
+    else
     {
-        while (pos() <= extreme_position_of_frame)
-        {
-            string frame_id = get_frame_id();
-            Parser frame(frame_id.c_str(), *this);
-            if (frame.parse() == no_id)
-                shift(-3);
-        }
+        extremePositionOfFrame = content.size() - 11;
+        return true;
     }
+}
 
-    if (!end())
-        skip();
-    return fine_crc;
+void Binary::V24::actualParse()
+{
+    while (pos() <= extremePositionOfFrame)
+    {
+        string frame_id = getFrameId();
+        Parser frame(frame_id.c_str(), *this);
+        if (frame.parse() == noId)
+            shift(-3);
+    }
 }

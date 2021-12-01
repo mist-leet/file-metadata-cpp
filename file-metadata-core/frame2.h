@@ -11,9 +11,11 @@ class Frame2 : public Frame
 protected:
     Binary::V22 &tag;
 
-    virtual bool parse_header() override final;
+    virtual bool parseHeader() override final;
 
-    virtual bool set_string_encoding() override final;
+    virtual QString getEncodingDependentString() const override final;
+
+    virtual QString getEncodingDependentString(const long long &) const override final;
 
 public:
     explicit Frame2(Binary::V22 &);

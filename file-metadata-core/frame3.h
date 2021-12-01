@@ -13,18 +13,22 @@ protected:
 
     virtual bool parse_header() override final;
 
-    virtual bool set_string_encoding() override final;
+    virtual bool tagHasContent() const override final;
 
-    uchar get_group_mark() const;
+    virtual FileContents & tagsContent() const override final;
 
-    virtual bool tag_has_content() const override final;
+    virtual QString getEncodingDependentString(FileContents &) const override final;
 
-    virtual File_contents & tags_content() const override final;
+    virtual QString getEncodingDependentString(FileContents &, const long long &) const override final;
+
+    virtual QString getEncodingDependentString(bool) const override final;
+
+    virtual QString getEncodingDependentString(bool, const long long &) const override final;
 
 public:
     explicit Frame3(Binary::V23 &);
 
-    static bool is_group_or_encr_mark(uchar);
+    static bool isGroupOrEncrMark(uchar);
 
     virtual ~Frame3() override;
 };

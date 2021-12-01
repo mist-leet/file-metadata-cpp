@@ -1,21 +1,13 @@
-#include "frames4sa.h"
+#include "frames4SA.h"
 using namespace std;
 
 //SIGN
-Binary::V24::SIGN::SIGN(Binary::V24 &t) :
-    Frame4(t)
-{}
-
-Binary::V24::SIGN::~SIGN() = default;
-
-bool Binary::V24::SIGN::parse_data()
+bool Binary::V24::SIGN::parseData()
 {
-    uchar mark = get_group_mark();
+    uchar mark = getGroupMark();
 
-    if (mark)
-        tag.group_info().sign[mark] = get_binary_till_end();
-    else
-        skip();
+    if (Frame4::isGroupOrEncrMark(mark))
+        tag.groupInfo().sign[mark] = getBinaryTillEnd();
 
-    return end();
+    return skip();
 }

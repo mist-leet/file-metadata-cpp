@@ -77,7 +77,10 @@ SOURCES += \
     parser.cpp \
     frames4unknown.cpp \
     file_contents.cpp \
-    char_conversions.cpp
+    char_conversions.cpp \
+    file_structs.cpp \
+    char_extracting.cpp \
+    monsterous_functions.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

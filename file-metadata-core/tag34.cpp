@@ -7,22 +7,22 @@ Tag34::Tag34(Binary &f)
 
 Tag34::~Tag34() = default;
 
-Encryption_method_markers & Tag34::encr_info()
+EncryptionMethodMarkers & Tag34::encrInfo()
 {
-    return encryption_info;
+    return encryptionInfo;
 }
 
-Group_markers & Tag34::group_info()
+GroupMarkers & Tag34::groupInfo()
 {
-    return grouping_info;
+    return groupingInfo;
 }
 
-string Tag34::get_frame_id()
+string Tag34::getFrameId()
 {
     if (content)
-        return content.get_frame34_id();
+        return content.getFrame34Id();
     else
-        return File_holder::get_symbols(4);
+        return FileHolder::getSymbols(4);
 }
 
 long long Tag34::pos() const
@@ -30,7 +30,7 @@ long long Tag34::pos() const
     if (content)
         return content.pos();
     else
-        return File_holder::pos();
+        return FileHolder::pos();
 }
 
 void Tag34::shift(long long offset) const
@@ -38,34 +38,48 @@ void Tag34::shift(long long offset) const
     if (content)
         content.shift(offset);
     else
-        File_holder::shift(offset);
+        FileHolder::shift(offset);
 }
 
-bool Tag34::correct_id(const char * const id)
+bool Tag34::parseData()
+{
+    if (!experimentalTag)
+    {
+        bool fineCrc{true};
+        if (expectedCrc.second)
+            fineCrc = handleCrc();
+
+        if (fineCrc)
+            actualParse();
+    }
+    return skip();
+}
+
+bool Tag34::correctId(const char *const id)
 {
     for (int i = 0;i < 4;++i)
-        if (!correct_char(id[i]))
+        if (!correctChar(id[i]))
             return false;
     return !id[4];
 }
 
-bool Tag34::is_userdef_url(const char * const id)
+bool Tag34::isUserdefUrl(const char *const id)
 {
-    return (id[0] == 'W' && Tag34::correct_id(id) && strcmp(id, "WCOM") && strcmp(id, "WCOP") && strcmp(id, "WOAF") &&
+    return (id[0] == 'W' && Tag34::correctId(id) && strcmp(id, "WCOM") && strcmp(id, "WCOP") && strcmp(id, "WOAF") &&
         strcmp(id, "WOAR") && strcmp(id, "WOAS") && strcmp(id, "WORS") && strcmp(id, "WPAY") && strcmp(id, "WPUB"));
 }
 
-bool Tag34::is_free_frame(const char * const id)
+bool Tag34::isFreeFrame(const char *const id)
 {
-    return (id[0] == 'X' || id[0] == 'Y' || id[0] == 'Z') && Tag34::correct_id(id);
+    return (id[0] == 'X' || id[0] == 'Y' || id[0] == 'Z') && Tag34::correctId(id);
 }
 
-bool Tag34::has_preextracted_data() const
+bool Tag34::hasPreextractedData() const
 {
     return content;
 }
 
-File_contents & Tag34::get_content()
+FileContents & Tag34::getContent()
 {
     return content;
 }

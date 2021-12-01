@@ -2,44 +2,32 @@
 using namespace std;
 
 //unknown
-Binary::V23::unknown_frame::unknown_frame(Binary::V23 &t)
-    : Frame3(t)
-{}
+bool Binary::V23::UnknownFrame::parseHeader()
+{
+    int number_of_length_bytes = setLength([this](int &count)
+                                            {
+                                                return this->getb(count);
+                                            }).first;//второй элемент пары всегда true
+    int number_of_flag_bytes = 0;
 
-Binary::V23::unknown_frame::~unknown_frame() = default;
+    getb(number_of_flag_bytes);//первый байт с флагами
+    getb(number_of_flag_bytes);//второй байт с флагами
+    endPosition = startPosition + 4 + number_of_length_bytes + number_of_flag_bytes + length;
+    return true;
+}
 
-bool Binary::V23::unknown_frame::parse_data()
+bool Binary::V23::UnknownFrame::parseData()
 {
     return skip();
 }
 
-bool Binary::V23::unknown_frame::parse_header()
-{
-    int number_of_length_bytes = set_length([this](int &count)
-                                            {
-                                                return this->getb(count);
-                                            }).first//второй элемент пары всегда true
-            , number_of_flag_bytes = 0;
-
-    getb(number_of_flag_bytes);//первый байт с флагами
-    getb(number_of_flag_bytes);//второй байт с флагами
-    end_position = start_position + 4 + number_of_length_bytes + number_of_flag_bytes + length;
-    return true;
-}
-
 //padding
-Binary::V23::padding_handler::padding_handler(Binary::V23 &t)
-    : Frame3(t)
-{}
-
-Binary::V23::padding_handler::~padding_handler() = default;
-
-bool Binary::V23::padding_handler::parse_header()
+bool Binary::V23::PaddingHandler::parseHeader()
 {
     return true;
 }
 
-bool Binary::V23::padding_handler::parse_data()
+bool Binary::V23::PaddingHandler::parseData()
 {
     seek(tag.endpos());
     return true;

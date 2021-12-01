@@ -2,28 +2,24 @@
 #include "v24.h"
 using namespace std;
 
-class Binary::V24::unknown_frame : public Frame4
+class Binary::V24::UnknownFrame : public Frame4
 {
 protected:
-    virtual bool parse_header() override final;
-
-    virtual bool parse_data() override final;
+    virtual bool parseHeader() override final;
+    virtual bool parseData() override final;
 
 public:
-    unknown_frame(Binary::V24 &);
-
-    ~unknown_frame() override;
+    explicit UnknownFrame(Binary::V24 &t) : Frame4(t) {}
+    virtual ~UnknownFrame() override = default;
 };
 
-class Binary::V24::padding_handler : public Frame4
+class Binary::V24::PaddingHandler : public Frame4
 {
 protected:
-    virtual bool parse_header() override final;
-
-    virtual bool parse_data() override final;
+    virtual bool parseHeader() override final;
+    virtual bool parseData() override final;
 
 public:
-    padding_handler(Binary::V24 &);
-
-    ~padding_handler() override;
+    explicit PaddingHandler(Binary::V24 &t) : Frame4(t) {}
+    virtual ~PaddingHandler() override = default;
 };

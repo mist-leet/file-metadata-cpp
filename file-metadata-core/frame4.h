@@ -11,20 +11,26 @@ class Frame4 : public Frame34
 protected:
     Binary::V24 &tag;
 
-    virtual bool parse_header() override;
+    virtual bool parseHeader() override;
 
-    virtual bool set_string_encoding() override final;
+    uchar getGroupMark() const;
 
-    uchar get_group_mark() const;
+    virtual bool tagHasContent() const override final;
 
-    virtual bool tag_has_content() const override final;
+    virtual FileContents & tagsContent() const override final;
 
-    virtual File_contents & tags_content() const override final;
+    virtual QString getEncodingDependentString(FileContents &) const override final;
+
+    virtual QString getEncodingDependentString(FileContents &, const long long &) const override final;
+
+    virtual QString getEncodingDependentString(bool) const override final;
+
+    virtual QString getEncodingDependentString(bool, const long long &) const override final;
 
 public:
     explicit Frame4(Binary::V24 &);
 
-    static bool is_group_or_encr_mark(uchar);
+    static bool isGroupOrEncrMark(uchar);
 
     virtual ~Frame4() override;
 };

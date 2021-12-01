@@ -2,22 +2,22 @@
 #include "file-holder.h"
 using namespace std;
 
-class Tag : public File_holder
+class Tag : public FileHolder
 {
     Tag(const Tag &) = delete;
     Tag & operator= (const Tag &) = delete;
 
 protected:
-    long long extreme_position_of_frame{end_position};
+    long long extremePositionOfFrame{endPosition};
 
-    virtual string get_frame_id() = 0;
+    virtual string getFrameId() = 0;
 
 public:
     explicit Tag(Binary & file);
 
-    static bool correct_char(char);
+    static bool correctChar(char);
 
-    static bool correct_char(uchar);
+    static bool correctChar(uchar);
 
     virtual ~Tag() override;
 };

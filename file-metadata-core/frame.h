@@ -3,21 +3,19 @@
 #include "tag.h"
 using namespace std;
 
-class Frame : public File_holder
+class Frame : public FileHolder
 {
-protected:
-    String_encoding encoding{not_given};
-
-private:
     Frame(const Frame &) = delete;
     Frame & operator = (const Frame &) = delete;
 
 protected:
-    virtual bool set_string_encoding() = 0;
+    QString getUrl() const;
 
-    QString get_url() const;
+    QString getUrl(const long long &) const;
 
-    QString get_url(const long long &) const;
+    virtual QString getEncodingDependentString() const = 0;
+
+    virtual QString getEncodingDependentString(const long long &) const = 0;
 
 public:
     explicit Frame(Tag &);

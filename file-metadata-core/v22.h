@@ -11,9 +11,9 @@ class Binary::V22 : public Tag
     V22 (const V22 & ) = delete;
     V22 & operator = (const V22 &) = delete;
 
-    class userdef_txt;
-    class userdef_url;
-    class unknown_frame;
+    class UserdefTxt;
+    class UserdefUrl;
+    class UnknownFrame;
     class BUF;
     class CNT;
     class COM;
@@ -77,11 +77,11 @@ class Binary::V22 : public Tag
     class WPB;
 
 protected:
-    virtual bool parse_header() override final;
+    virtual bool parseHeader() override final;
 
-    virtual bool parse_data() override final;
+    virtual bool parseData() override final;
 
-    virtual string get_frame_id() override final;
+    virtual string getFrameId() override final;
 
 public:
     explicit V22(Binary & file_);//объект создаётся после проверки значений версии и ревизии

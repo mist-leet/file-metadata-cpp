@@ -3,25 +3,25 @@
 using namespace std;
 
 //v3-4
-struct Frame_status
+struct FrameStatus
 {
-    bool tag_alter_preservation{true};
-    bool file_alter_preservation{true};
-    bool read_only{false};
+    bool tagAlterPreservation{true};
+    bool fileAlterPreservation{true};
+    bool readOnly{false};
 
-    Frame_status()
+    FrameStatus()
     {}
 };
 
 //v3-4
-struct Frame_format
+struct FrameFormat
 {
-    bool group_id_presence{false};
-    uchar group_id;
+    bool groupIdPresence{false};
+    uchar groupId;
     bool encryption{false};
-    uchar encryption_method_marker;
-    pair<ulong,bool> compression_info{make_pair(0,false)};//first is uncompressed size
+    uchar encryptionMethodMarker;
+    pair<ulong,bool> compressionInfo{make_pair(0,false)};//first is uncompressed size
 
-    Frame_format()
+    FrameFormat()
     {}
 };

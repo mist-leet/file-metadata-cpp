@@ -10,23 +10,23 @@ class Binary : public QFile
     Binary(const Binary &) = delete;
     Binary& operator = (const Binary &) = delete;
 
-    void one_byte_back_with_no_check();
+    void oneByteBack();
 
 protected:
-    bool successfully_opened{false};
-    File_metadata data{};
+    bool successfullyOpened{false};
+    FileMetadata data{};
 
-    function<bool(char *)> getChar_lambda{
+    function<bool(char *)> getCharLambda{
                                             [this](char * c)
                                             {
                                                 return this->getChar(c);
                                             }
                                          };
 
-    function<void()> one_byte_back_lambda{
+    function<void()> oneByteBackLambda{
                                             [this]()
                                             {
-                                                return this->one_byte_back_with_no_check();
+                                                return this->oneByteBack();
                                             }
                                          };
 
@@ -65,49 +65,51 @@ public:
     uchar getb(T &, bool);
     /*---</элементарные функции>---*/
 
-    Byte_order get_BOM(bool);
+    ByteOrder getBOM(bool);
 
-    QString get_iso8859_str(bool, const long long &);
+    QString getIso8859Str(bool, const long long &);
 
-    QString get_utf16_str(bool, Byte_order, const long long &);//не чекает BOM
+    QString getUtf16Str(bool, ByteOrder, const long long &);//не чекает BOM
 
-    QString get_utf8_str(bool, const long long &);
+    QString getUtf8Str(bool, const long long &);
 
-    QString get_ucs2_str(bool, Byte_order, const long long &);//не чекает BOM
+    QString getUcs2Str(bool, ByteOrder, const long long &);//не чекает BOM
 
-    QString get_encoding_dependent_string(bool, String_encoding, const long long &, function<bool()>);
+    StringEncoding getStringEncoding(bool, TagVersion);
 
-    QByteArray get_raw_bytes(bool, ulong);
+    QString getEncodingDependentString(bool, TagVersion, const long long &);
+
+    QByteArray getBytes(bool, ulong);
 
     operator bool () const;
 
-    const File_metadata & get_data() const;
+    const FileMetadata & getData() const;
 
-    File_metadata & get_data();
+    FileMetadata & getData();
 
     bool parse();
 
-    void display_info(bool) const;
+    void displayInfo(bool) const;
 
-    bool has_info() const;
+    bool hasInfo() const;
 
     void shift(long long = -1);
 
-    void back_from_end(qint64);
+    void backFromEnd(qint64);
 
-    char ch_backwards();
+    char charBackwards();
 
-    bool check_for(string);
+    bool checkFor(string);
 
-    Tag_version v2_header();
+    TagVersion v2Header();
 
-    ulong parse_v2_footer();//возвращает 0, если футер не найден или некорректен
+    ulong parseV2Footer();//возвращает 0, если футер не найден или некорректен
 
-    void parse_from_start();
+    void parseFromStart();
 
-    void parse_from_end();
+    void parseFromEnd();
 
-    void parse_v1();
+    void parseV1();
 
     virtual ~Binary() override;
 };
@@ -115,31 +117,31 @@ public:
 template<typename T>
 uchar Binary::get(T & count)
 {
-    return ::get(getChar_lambda
+    return ::get(getCharLambda
                 , count);
 }
 
 template<typename T>
 char Binary::ch(T & count)
 {
-    return ::ch(getChar_lambda
+    return ::ch(getCharLambda
                 , count);
 }
 
 template<typename T>
 uchar Binary::getb(T & count, bool unsynch)
 {
-    return ::getb(getChar_lambda
+    return ::getb(getCharLambda
                 , unsynch
-                , one_byte_back_lambda
+                , oneByteBackLambda
                 , count);
 }
 
 template<typename T>
 char Binary::uch(T & count, bool unsynch)
 {
-    return ::uch(getChar_lambda
+    return ::uch(getCharLambda
                 , unsynch
-                , one_byte_back_lambda
+                , oneByteBackLambda
                 , count);
 }

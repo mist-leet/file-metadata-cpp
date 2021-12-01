@@ -1,36 +1,35 @@
 #include "file_contents.h"
 using namespace std;
 
-File_contents::File_contents()
-    : data()
+FileContents::FileContents()
 {}
 
-File_contents::~File_contents() = default;
+FileContents::~FileContents() = default;
 
-bool File_contents::set_data_and_check_src(Binary &file, bool unsynch, ulong raw_data_size, ulong expected_crc)
+bool FileContents::setDataAndCheckSrc(Binary &file, bool unsynch, ulong raw_data_size, ulong expected_crc)
 {
-    data = file.get_raw_bytes(unsynch,raw_data_size);
+    data = file.getBytes(unsynch,raw_data_size);
     uint actual_size = data.size();
-    Easy_ptr<uchar> unsigned_data(actual_size);
-    to_uchar(data.constData(),unsigned_data.get_ptr(),actual_size);
+    EasyPtr<uchar> unsigned_data(actual_size);
+    toUchar(data.constData(),unsigned_data.getPtr(),actual_size);
     ulong crc = crc32(0,nullptr,0);//инициализация crc
-    crc = crc32(crc,unsigned_data.const_ptr(),actual_size);//могут быть ошибки
+    crc = crc32(crc,unsigned_data.constPtr(),actual_size);//могут быть ошибки
     return crc == expected_crc;
 }
 
-bool File_contents::decompress_raw_data(Binary &file, bool unsynch, ulong raw_data_size,  ulong expected_data_size)
+bool FileContents::decompressRawData(Binary &file, bool unsynch, ulong raw_data_size,  ulong expected_data_size)
 {
-    data = qUncompressWrapper(file.get_raw_bytes(unsynch,raw_data_size),expected_data_size);
+    data = qUncompressWrapper(file.getBytes(unsynch,raw_data_size),expected_data_size);
     return !data.isEmpty();
 }
 
-bool File_contents::decompress_raw_data(File_contents &other_storage, ulong raw_data_size, ulong expected_data_size)
+bool FileContents::decompressRawData(FileContents &other_storage, ulong raw_data_size, ulong expected_data_size)
 {
-    data = qUncompressWrapper(other_storage.share_data(raw_data_size),expected_data_size);
+    data = qUncompressWrapper(other_storage.shareData(raw_data_size),expected_data_size);
     return !data.isEmpty();
 }
 
-QByteArray File_contents::share_data(ulong size)
+QByteArray FileContents::shareData(ulong size)
 {
     QByteArray arr;
     for (ulong i = 0;i < size;++i)
@@ -38,16 +37,16 @@ QByteArray File_contents::share_data(ulong size)
     return arr;
 }
 
-void File_contents::one_byte_back_with_no_check()
+void FileContents::oneByteBack()
 {
     --position;
 }
 
-bool File_contents::getChar(char * c)
+bool FileContents::getChar(char * c)
 {
     if (c)
     {
-        if (position <= lastpos())
+        if (position <= lastPos())
         {
             *c = data.at(position);
             ++position;
@@ -58,115 +57,115 @@ bool File_contents::getChar(char * c)
     return c;
 }
 
-bool File_contents::skip()
+bool FileContents::skip()
 {
-    position = lastpos();
+    position = lastPos();
     return true;
 }
 
-ulong File_contents::pos() const
+ulong FileContents::pos() const
 {
     return position;
 }
 
-void File_contents::seek(ulong new_position)
+void FileContents::seek(ulong new_position)
 {
-    if (new_position <= lastpos())
+    if (new_position <= lastPos())
         position = new_position;
     else
-        position = lastpos();
+        position = lastPos();
 }
 
-void File_contents::shift(long long offset)
+void FileContents::shift(long long offset)
 {
     long long resulting_pos = position + offset;
-    if (resulting_pos >= 0 && resulting_pos <= lastpos())
+    if (resulting_pos >= 0 && resulting_pos <= lastPos())
         position = resulting_pos;
     else
     {
         if (resulting_pos < 0)
             position = 0;
         else
-            position = lastpos();
+            position = lastPos();
     }
 }
 
-File_contents::operator bool () const
+FileContents::operator bool () const
 {
     return !data.isEmpty();
 }
 
-bool File_contents::end() const
+bool FileContents::end() const
 {
     return position == data.size();
 }
 
-int File_contents::lastpos() const
+int FileContents::lastPos() const
 {
     return data.size() - 1;
 }
 
-int File_contents::size() const
+int FileContents::size() const
 {
     return data.size();
 }
 
-char File_contents::ch()
+char FileContents::ch()
 {
     return ::ch(getCharLambda);
 }
 
-uchar File_contents::get()
+uchar FileContents::get()
 {
     return ::get(getCharLambda);
 }
 
-Byte_order File_contents::get_BOM()
+ByteOrder FileContents::getBOM()
 {
-    return ::get_BOM(getCharLambda,false,oneByteBackLambda);
+    return ::getBOM(getCharLambda,false,oneByteBackLambda);
 }
 
-QString File_contents::get_iso8859_str()
+QString FileContents::getIso8859Str()
 {
-    return ::get_iso8859_str(getCharLambda,false,oneByteBackLambda,data.size() - position);
+    return ::getIso8859Str(getCharLambda,false,oneByteBackLambda,data.size() - position);
 }
 
-QString File_contents::get_iso8859_str(const long long & len)
+QString FileContents::getIso8859Str(const long long & len)
 {
-    return ::get_iso8859_str(getCharLambda,false,oneByteBackLambda,len);
+    return ::getIso8859Str(getCharLambda,false,oneByteBackLambda,len);
 }
 
-QString File_contents::get_utf16_str(Byte_order bo)//не чекает BOM
+QString FileContents::getUtf16Str(ByteOrder bo)//не чекает BOM
 {
-    return ::get_utf16_str(getCharLambda,false,bo,oneByteBackLambda,data.size() - position);
+    return ::getUtf16Str(getCharLambda,false,bo,oneByteBackLambda,data.size() - position);
 }
 
-QString File_contents::get_utf16_str(Byte_order bo, const long long & len)//не чекает BOM
+QString FileContents::getUtf16Str(ByteOrder bo, const long long & len)//не чекает BOM
 {
-    return ::get_utf16_str(getCharLambda,false,bo,oneByteBackLambda,len);
+    return ::getUtf16Str(getCharLambda,false,bo,oneByteBackLambda,len);
 }
 
-QString File_contents::get_utf8_str()
+QString FileContents::getUtf8Str()
 {
-    return ::get_utf8_str(getCharLambda,false,oneByteBackLambda,data.size() - position);
+    return ::getUtf8Str(getCharLambda,false,oneByteBackLambda,data.size() - position);
 }
 
-QString File_contents::get_utf8_str(const long long & len)
+QString FileContents::getUtf8Str(const long long & len)
 {
-    return ::get_utf8_str(getCharLambda,false,oneByteBackLambda,len);
+    return ::getUtf8Str(getCharLambda,false,oneByteBackLambda,len);
 }
 
-QString File_contents::get_ucs2_str(Byte_order bo)//не чекает BOM
+QString FileContents::getUcs2Str(ByteOrder bo)//не чекает BOM
 {
-    return ::get_ucs2_str(getCharLambda,false,bo,oneByteBackLambda,data.size() - position);
+    return ::getUcs2Str(getCharLambda,false,bo,oneByteBackLambda,data.size() - position);
 }
 
-QString File_contents::get_ucs2_str(Byte_order bo, const long long & len)//не чекает BOM
+QString FileContents::getUcs2Str(ByteOrder bo, const long long & len)//не чекает BOM
 {
-    return ::get_ucs2_str(getCharLambda,false,bo,oneByteBackLambda,len);
+    return ::getUcs2Str(getCharLambda,false,bo,oneByteBackLambda,len);
 }
 
-QByteArray File_contents::get_binary_till_end()
+QByteArray FileContents::getBinaryTillEnd()
 {
     QByteArray arr;
     while (!end())
@@ -174,17 +173,24 @@ QByteArray File_contents::get_binary_till_end()
     return arr;
 }
 
-QString File_contents::get_encoding_dependent_string(String_encoding enc, function<bool()> skip)//не чекает BOM
+StringEncoding FileContents::getStringEncoding(TagVersion v)
 {
-    return ::get_encoding_dependent_string(getCharLambda,false,oneByteBackLambda,data.size() - position,enc,skip);
+    return ::getStringEncoding(getCharLambda, false, oneByteBackLambda, v);
 }
 
-QString File_contents::get_encoding_dependent_string(String_encoding enc, const long long & len, function<bool()> skip)//не чекает BOM
+QString FileContents::getEncodingDependentString(TagVersion v)
 {
-    return ::get_encoding_dependent_string(getCharLambda,false,oneByteBackLambda,len,enc,skip);
+    return ::getEncodingDependentString(getCharLambda, false, oneByteBackLambda, data.size() - position,
+                                           getStringEncoding(v));
 }
 
-string File_contents::get_symbols(int amount)
+QString FileContents::getEncodingDependentString(TagVersion v, const long long &len)
+{
+    return ::getEncodingDependentString(getCharLambda, false, oneByteBackLambda, len,
+                                           getStringEncoding(v));
+}
+
+string FileContents::getSymbols(int amount)
 {
     string str;
     for (int i = 0;i < amount;++i)
@@ -192,7 +198,7 @@ string File_contents::get_symbols(int amount)
     return str;
 }
 
-string File_contents::get_frame34_id()
+string FileContents::getFrame34Id()
 {
-    return get_symbols(4);
+    return getSymbols(4);
 }

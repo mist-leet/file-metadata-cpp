@@ -2,24 +2,60 @@
 using namespace std;
 
 //ENCR
-Binary::V24::ENCR::ENCR(Binary::V24 &t) :
-    Frame4(t)
-{}
-
-Binary::V24::ENCR::~ENCR() = default;
-
-bool Binary::V24::ENCR::parse_data()
+bool Binary::V24::ENCR::parseData()
 {
-    QString _url = get_url();
-    uchar mark = get_group_mark();
+    QString _url = getUrl();
+    uchar mark = getGroupMark();
 
-    if (mark)
+    if (Frame4::isGroupOrEncrMark(mark))
     {
-        tag.encr_info().info[mark] = get_binary_till_end();
-        tag.encr_info().url[mark] = _url;
+        tag.encrInfo().info[mark] = getBinaryTillEnd();
+        tag.encrInfo().url[mark] = _url;
     }
-    else
-        skip();
 
-    return end();
+    return skip();
+}
+
+//ETCO
+bool Binary::V24::ETCO::parseData()
+{
+    //
+}
+
+//EQU2
+bool Binary::V24::EQU2::parseData()
+{
+    //
+}
+
+//UFID
+bool Binary::V24::UFID::parseData()
+{
+    QString url = getUrl();
+    file.getData().ufids[url] = getBinaryTillEnd();
+    return skip();
+}
+
+//USER
+bool Binary::V24::USER::parseData()
+{
+    //
+}
+
+//USLT
+bool Binary::V24::USLT::parseData()
+{
+    //
+}
+
+//MLLT
+bool Binary::V24::MLLT::parseData()
+{
+    //
+}
+
+//MCDI
+bool Binary::V24::MCDI::parseData()
+{
+    //
 }

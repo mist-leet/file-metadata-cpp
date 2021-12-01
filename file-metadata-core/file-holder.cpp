@@ -1,37 +1,37 @@
 #include "file-holder.h"
 using namespace std;
 
-File_holder::File_holder(Binary & f)//tag
+FileHolder::FileHolder(Binary &f)//tag
     : file(f)
     , unsynch(false)
-    , synchsafe_header(true)
-    , start_position(file.pos() - 5)
-    , end_position(start_position + 3)
+    , synchsafeHeader(true)
+    , startPosition(file.pos() - 5)
+    , endPosition(startPosition + 3)
     {}
 
-File_holder::File_holder(Binary & f, bool unsynch_)//frame
+FileHolder::FileHolder(Binary &f, bool u)//frame
     : file(f)
-    , unsynch(unsynch_)
-    , synchsafe_header(false)
-    , start_position(file.pos() - 4)
-    , end_position(start_position + 4)
+    , unsynch(u)
+    , synchsafeHeader(false)
+    , startPosition(file.pos() - 4)
+    , endPosition(startPosition + 4)
     {}
 
-File_holder::~File_holder() = default;
+FileHolder::~FileHolder() = default;
 
-pair<int, bool> File_holder::set_length(function<uchar(int &)> get_f)
+pair<int, bool> FileHolder::setLength(function<uchar(int &)> get_f)
 {
     uchar bytes[4];
     int count = 0;
     for (int i = 3;i >= 0;--i)
     {
         bytes[i] = get_f(count);
-        if (synchsafe_header && bytes[i] > 127)
+        if (synchsafeHeader && bytes[i] > 127)
             return make_pair(count,false);
     }
 
     ulong factor;
-    if (synchsafe_header)
+    if (synchsafeHeader)
         factor = 128;
     else
         factor = 256;
@@ -42,22 +42,22 @@ pair<int, bool> File_holder::set_length(function<uchar(int &)> get_f)
     return make_pair(count,true);
 }
 
-File_holder::operator bool() const
+FileHolder::operator bool() const
 {
-    return pos() < end_position;
+    return pos() < endPosition;
 }
 
-long long File_holder::size() const
+long long FileHolder::size() const
 {
     return file.size();
 }
 
-bool File_holder::end() const
+bool FileHolder::end() const
 {
-    return pos() == end_position;
+    return pos() == endPosition;
 }
 
-void File_holder::seek(long long pos) const
+void FileHolder::seek(long long pos) const
 {
     if (pos >= 0 && pos < file.size())
         file.seek(pos);
@@ -70,125 +70,127 @@ void File_holder::seek(long long pos) const
     }
 }
 
-long long File_holder::pos() const
+long long FileHolder::pos() const
 {
     return file.pos();
 }
 
-bool File_holder::skip() const
+bool FileHolder::skip() const
 {
-    seek(end_position);
+    seek(endPosition);
     return true;
 }
 
-void File_holder::shift(long long offset) const
+void FileHolder::shift(long long offset) const
 {
     long long resulting_pos = pos() + offset;
     seek(resulting_pos);
 }
 
-bool File_holder::parse()
+bool FileHolder::parse()
 {
-    if (parse_header())
-        return parse_data();
+    if (parseHeader())
+        return parseData();
     else
         return !skip();
 }
 
-const Binary & File_holder::get_file() const
+const Binary & FileHolder::getFile() const
 {
     return file;
 }
 
-Binary & File_holder::get_file()
+Binary & FileHolder::getFile()
 {
     return file;
 }
 
-bool File_holder::get_unsynch() const
+bool FileHolder::getUnsynch() const
 {
     return unsynch;
 }
 
-char File_holder::ch() const
+char FileHolder::ch() const
 {
     return file.ch();
 }
 
-uchar File_holder::get() const
+uchar FileHolder::get() const
 {
     return file.get();
 }
 
-char File_holder::uch() const
+char FileHolder::uch() const
 {
     return file.uch(unsynch);
 }
 
-uchar File_holder::getb() const
+uchar FileHolder::getb() const
 {
     return file.getb(unsynch);
 }
 
-Byte_order File_holder::get_BOM() const
+ByteOrder FileHolder::getBOM() const
 {
-    return file.get_BOM(unsynch);
+    return file.getBOM(unsynch);
 }
 
-QString File_holder::get_iso8859_str() const
+QString FileHolder::getIso8859Str() const
 {
-    return file.get_iso8859_str(unsynch, end_position - pos());
+    return file.getIso8859Str(unsynch, endPosition - pos());
 }
 
-QString File_holder::get_iso8859_str(const long long &dur) const
+QString FileHolder::getIso8859Str(const long long &dur) const
 {
-    return file.get_iso8859_str(unsynch, dur);
+    return file.getIso8859Str(unsynch, dur);
 }
 
-QString File_holder::get_utf16_str(Byte_order bo) const//не чекает BOM
+QString FileHolder::getUtf16Str(ByteOrder bo) const//не чекает BOM
 {
-    return file.get_utf16_str(unsynch, bo, end_position - pos());
+    return file.getUtf16Str(unsynch, bo, endPosition - pos());
 }
 
-QString File_holder::get_utf16_str(Byte_order bo, const long long &dur) const//не чекает BOM
+QString FileHolder::getUtf16Str(ByteOrder bo, const long long &dur) const//не чекает BOM
 {
-    return file.get_utf16_str(unsynch, bo, dur);
+    return file.getUtf16Str(unsynch, bo, dur);
 }
 
-QString File_holder::get_utf8_str() const
+QString FileHolder::getUtf8Str() const
 {
-    return file.get_utf8_str(unsynch, end_position - pos());
+    return file.getUtf8Str(unsynch, endPosition - pos());
 }
 
-QString File_holder::get_utf8_str(const long long &dur) const
+QString FileHolder::getUtf8Str(const long long &dur) const
 {
-    return file.get_utf8_str(unsynch, dur);
+    return file.getUtf8Str(unsynch, dur);
 }
 
-QString File_holder::get_ucs2_str(Byte_order bo) const//не чекает BOM
+QString FileHolder::getUcs2Str(ByteOrder bo) const//не чекает BOM
 {
-    return file.get_ucs2_str(unsynch, bo, end_position - pos());
+    return file.getUcs2Str(unsynch, bo, endPosition - pos());
 }
 
-QString File_holder::get_ucs2_str(Byte_order bo, const long long &dur) const//не чекает BOM
+QString FileHolder::getUcs2Str(ByteOrder bo, const long long &dur) const//не чекает BOM
 {
-    return file.get_ucs2_str(unsynch, bo,dur);
+    return file.getUcs2Str(unsynch, bo, dur);
 }
 
-QString File_holder::get_encoding_dependent_string(String_encoding enc) const
+StringEncoding FileHolder::getStringEncoding(TagVersion v)
 {
-    return get_encoding_dependent_string(enc, end_position - pos());
+    return file.getStringEncoding(unsynch, v);
 }
 
-QString File_holder::get_encoding_dependent_string(String_encoding enc, const long long &dur) const
+QString FileHolder::getEncodingDependentString(TagVersion v) const
 {
-    return file.get_encoding_dependent_string(unsynch, enc,dur,[this]()
-                                                                {
-                                                                    return this->skip();
-                                                                });
+    return file.getEncodingDependentString(unsynch, v, endPosition - pos());
 }
 
-QByteArray File_holder::get_binary_till_end() const
+QString FileHolder::getEncodingDependentString(TagVersion v, const long long &dur) const
+{
+    return file.getEncodingDependentString(unsynch, v, dur);
+}
+
+QByteArray FileHolder::getBinaryTillEnd() const
 {
     QByteArray arr;
     while (*this)
@@ -196,7 +198,7 @@ QByteArray File_holder::get_binary_till_end() const
     return arr;
 }
 
-string File_holder::get_symbols(int amount)
+string FileHolder::getSymbols(int amount)
 {
     string str;
     for (int i = 0;i < amount;++i)
@@ -204,7 +206,7 @@ string File_holder::get_symbols(int amount)
     return str;
 }
 
-qint64 File_holder::endpos() const
+qint64 FileHolder::endpos() const
 {
-    return end_position;
+    return endPosition;
 }

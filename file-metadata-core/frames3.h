@@ -2,28 +2,24 @@
 #include "frame3.h"
 using namespace std;
 
-class Binary::V23::unknown_frame : public Frame3
+class Binary::V23::UnknownFrame : public Frame3
 {
 protected:
-    virtual bool parse_header() override final;
-
-    virtual bool parse_data() override final;
+    virtual bool parseHeader() override final;
+    virtual bool parseData() override final;
 
 public:
-    unknown_frame(Binary::V23 &);
-
-    ~unknown_frame() override;
+    explicit UnknownFrame(Binary::V23 &t) : Frame3(t) {}
+    virtual ~UnknownFrame() override = default;
 };
 
-class Binary::V23::padding_handler : public Frame3
+class Binary::V23::PaddingHandler : public Frame3
 {
 protected:
-    virtual bool parse_header() override final;
-
-    virtual bool parse_data() override final;
+    virtual bool parseHeader() override final;
+    virtual bool parseData() override final;
 
 public:
-    padding_handler(Binary::V23 &);
-
-    ~padding_handler() override;
+    explicit PaddingHandler(Binary::V23 &t) : Frame3(t) {}
+    virtual ~PaddingHandler() override = default;
 };

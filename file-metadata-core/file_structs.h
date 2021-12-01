@@ -1,34 +1,42 @@
 #pragma once
 using namespace std;
 
-//все метаданные файла
-struct File_metadata
+struct GeneralInfo
 {
-    QHash<QString, QString> fields;
-    pair<uint, uint> position_in_album{make_pair(0,0)};
-    //дописать
+    QString title{};
+    QString performer{};
+    QString album{};
+    QString titleSorting{};
+    QString performerSorting{};
+    QString albumSorting{};
 
-    File_metadata();
+    GeneralInfo();
 
-    bool has_info() const;
+    bool isEmpty() const;
 
-    void display_on_console() const;//написать
-
-    void display_on_ui() const;//написать
-
-    bool needs_v1() const;
+    bool hasAllDisplayableData() const;
 };
 
-bool File_metadata::has_info() const//нужно поддерживать в актуальном состоянии!
+//все метаданные файла
+struct FileMetadata
 {
-    return position_in_album.first && !fields.isEmpty();
-}
+    QHash<QString, QString> textFields{};//text info
+    QHash<QString, QString> commercial{};//commercial info
+    QHash<QString, QByteArray> ufids{};//unique file id
+    GeneralInfo generalInfo{};//исполнитель, альбом, название трека
+    pair<uint, uint> albumPosition{make_pair(0,0)};
+    pair<uint, uint> setPosition{make_pair(0,0)};
+    char isrc[13];//последний байт - индикатор наличия isrc; он равен 0, если isrc отсутствует, в противном случае не равен 0
+    QList<QString> languages{};
+    //дописать
 
-File_metadata::File_metadata()
-{}
+    FileMetadata();
 
-bool File_metadata::needs_v1() const//неизвестно хотя бы что то из нижеперечисленного
-{
-    return !fields.contains("Title") || !fields.contains("Performer") || !fields.contains("Album") ||
-            !fields.contains("Comment") || !fields.contains("Release time") || !fields.contains("Genre") || !position_in_album.first;
-}
+    bool hasInfo() const;
+
+    void displayOnConsole() const;//написать
+
+    void displayOnUi() const;//написать
+
+    bool needsV1() const;
+};

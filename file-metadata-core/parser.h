@@ -8,9 +8,9 @@
 #include "frames3.h"
 
 #include "v24.h"
-#include "frames4gclo.h"
+#include "frames4GCLO.h"
 #include "frames4RP.h"
-#include "frames4sa.h"
+#include "frames4SA.h"
 #include "frames4text.h"
 #include "frames4UEM.h"
 #include "frames4unknown.h"
@@ -26,26 +26,26 @@ class Parser
     Parser() = delete;//restricted
 
 protected:
-    File_holder *subject{nullptr};
+    FileHolder *subject{nullptr};
 
-    void set_frame(const char * const, Binary::V22 &);//frame v2.2
+    void setFrame(const char *const, Binary::V22 &);//frame v2.2
 
-    void set_frame(const char * const, Binary::V23 &);//frame v2.3
+    void setFrame(const char *const, Binary::V23 &);//frame v2.3
 
-    void set_frame(const char * const, Binary::V24 &);//frame v2.4
+    void setFrame(const char *const, Binary::V24 &);//frame v2.4
 
 public:
     Parser(Binary &);//V1
 
-    Parser(Tag_version, Binary &);//V2*
+    Parser(TagVersion, Binary &);//V2*
 
-    Parser(const char * const, Binary::V22 &);//frame 2
+    Parser(const char *const, Binary::V22 &);//frame 2
 
-    Parser(const char * const, Binary::V23 &);//frame 3
+    Parser(const char *const, Binary::V23 &);//frame 3
 
-    Parser(const char * const, Binary::V24 &);//frame 4
+    Parser(const char *const, Binary::V24 &);//frame 4
 
-    Parsing_result parse() const;
+    ParsingResult parse() const;
 
     ~Parser();
 };

@@ -8,12 +8,12 @@ class Binary::V23 : public Tag34
 {
     friend class Parser;
 
-    ulong size_of_padding{0};
+    ulong sizeOfPadding{0};
 
-    class padding_handler;
-    class userdef_txt;
-    class userdef_url;
-    class unknown_frame;
+    class PaddingHandler;
+    class UserdefTxt;
+    class UserdefUrl;
+    class UnknownFrame;
     class AENC;
     class APIC;
     class COMM;
@@ -87,20 +87,22 @@ class Binary::V23 : public Tag34
     class WPAY;
     class WPUB;
 
-    V23 (const V23 & ) = delete ;
-    V23 & operator = (const V23 &) = delete ;
+    V23 (const V23 & ) = delete;
+    V23 & operator = (const V23 &) = delete;
 
 protected:
-    virtual bool parse_extended_header() override final;
+    virtual bool parseExtendedHeader() override final;
 
-    virtual bool parse_header() override final;
+    virtual bool parseHeader() override final;
 
-    virtual bool parse_data() override final;
+    virtual bool handleCrc() override final;
+
+    virtual void actualParse() override final;
 
 public:
     explicit V23(Binary &);//объект создаётся после проверки значений версии и ревизии
 
-    static bool is_userdef_txt(const char *const);
+    static bool isUserdefTxt(const char *const);
 
     virtual ~V23() override;
 };

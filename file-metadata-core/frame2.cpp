@@ -5,21 +5,21 @@ Frame2::Frame2(Binary::V22 &t)
     : Frame(t)
     , tag(t)
 {
-    start_position = pos() - 3;
-    end_position = start_position + 3;
+    startPosition = pos() - 3;
+    endPosition = startPosition + 3;
 }
 
 Frame2::~Frame2() = default;
 
 bool Frame2::parse()
 {
-    parse_header();
-    return parse_data();
+    parseHeader();
+    return parseData();
 }
 
-bool Frame2::parse_header()
+bool Frame2::parseHeader()
 {
-    end_position = start_position + 3 + set_length([this](int &count)
+    endPosition = startPosition + 3 + setLength([this](int &count)
                                                         {
                                                             return this->getb(count);
                                                         }).first
@@ -27,21 +27,12 @@ bool Frame2::parse_header()
     return true;
 }
 
-bool Frame2::set_string_encoding()
+QString Frame2::getEncodingDependentString() const
 {
-    unsigned char enc_byte = getb();
-    switch (enc_byte)
-    {
-    case 0:
-        encoding = iso_8859_1;
-        return true;
+    return FileHolder::getEncodingDependentString(two);
+}
 
-    case 1:
-        encoding = ucs_2be;
-        return true;
-
-    default:
-        encoding = not_given;
-        return false;
-    }
+QString Frame2::getEncodingDependentString(const long long &dur) const
+{
+    return FileHolder::getEncodingDependentString(two, dur);
 }

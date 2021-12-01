@@ -8,7 +8,7 @@ Binary::V23::V23(Binary &file) :
 
 Binary::V23::~V23() = default;
 
-bool Binary::V23::parse_header()
+bool Binary::V23::parseHeader()
 {
     mByte flags = get();
     for (unsigned i = 0;i < 5;++i)
@@ -17,40 +17,40 @@ bool Binary::V23::parse_header()
 
     unsynch = flags.test(7);
     bool extdh = flags.test(6);
-    experimental_tag = flags.test(5);
+    experimentalTag = flags.test(5);
 
-    bool correctness = set_length([this](int &count)
+    bool correctness = setLength([this](int &count)
                                     {
-                                        return this->File_holder::get(count);
+                                        return this->FileHolder::get(count);
                                     }).second;
-    end_position = start_position + 10 + length;
+    endPosition = startPosition + 10 + length;
     if (correctness && extdh)
-        correctness = parse_extended_header();
-    extreme_position_of_frame = end_position - 11 - size_of_padding;
+        correctness = parseExtendedHeader();
+    extremePositionOfFrame = endPosition - 11 - sizeOfPadding;
     return correctness;
 }
 
-bool Binary::V23::parse_extended_header()
+bool Binary::V23::parseExtendedHeader()
 {
     for (int i = 0;i < 4;++i)
-        getb(size_of_extended_header);
+        getb(sizeOfExtendedHeader);
 
-    expected_crc.second = (getb(size_of_extended_header) > 127);//установлен первый бит первого флага
-    getb(size_of_extended_header);//второй байт не имеет значимого контента
+    expectedCrc.second = (getb(sizeOfExtendedHeader) > 127);//установлен первый бит первого флага
+    getb(sizeOfExtendedHeader);//второй байт не имеет значимого контента
 
     for (int i = 3;i >= 0;--i)
-        size_of_padding += getb(size_of_extended_header)*power(256,i);
+        sizeOfPadding += getb(sizeOfExtendedHeader)*power(256,i);
 
-    if (expected_crc.second)
+    if (expectedCrc.second)
         for (int i = 3;i >= 0;--i)
-            expected_crc.first += getb(size_of_extended_header)*power(256,i);
+            expectedCrc.first += getb(sizeOfExtendedHeader)*power(256,i);
 
     return true;
 }
 
-bool Binary::V23::is_userdef_txt(const char *const id)
+bool Binary::V23::isUserdefTxt(const char *const id)
 {
-    return  (id[0] == 'T' && Binary::V23::correct_id(id) && strcmp(id, "TALB") && strcmp(id, "TBPM")
+    return  (id[0] == 'T' && Binary::V23::correctId(id) && strcmp(id, "TALB") && strcmp(id, "TBPM")
      && strcmp(id, "TCOP") && strcmp(id, "TDAT") && strcmp(id, "TDLY") && strcmp(id, "TENC")
      && strcmp(id, "TEXT") && strcmp(id, "TFLT") && strcmp(id, "TIME") && strcmp(id, "TIT1")
      && strcmp(id, "TIT2") && strcmp(id, "TIT3") && strcmp(id, "TKEY") && strcmp(id, "TLAN")
@@ -62,32 +62,27 @@ bool Binary::V23::is_userdef_txt(const char *const id)
      && strcmp(id, "TSSE") && strcmp(id, "TYER")&& strcmp(id, "TCOM") && strcmp(id, "TCON"));
 }
 
-bool Binary::V23::parse_data()
+bool Binary::V23::handleCrc()
 {
-    bool fine_crc = true;
-    if (expected_crc.second)
+    if (!content.setDataAndCheckSrc(file,unsynch,endPosition - sizeOfPadding - pos(),expectedCrc.first))
     {
-        if (!content.set_data_and_check_src(file,unsynch,end_position - size_of_padding - pos(),expected_crc.first))
-        {
-            qCritical() << "посчитанный CRC32 не совпадает с переданным\n";
-            fine_crc = false;
-        }
-        else
-            extreme_position_of_frame = content.size() - 11 - size_of_padding;
+        qCritical() << "посчитанный CRC32 не совпадает с переданным\n";
+        return false;
     }
-
-    if (fine_crc)
+    else
     {
-        while (pos() <= extreme_position_of_frame)
-        {
-            string frame_id = get_frame_id();
-            Parser frame(frame_id.c_str(), *this);
-            if (frame.parse() == no_id)
-                shift(-3);
-        }
+        extremePositionOfFrame = content.size() - 11 - sizeOfPadding;
+        return true;
     }
+}
 
-    if (!end())
-        skip();
-    return fine_crc;
+void Binary::V23::actualParse()
+{
+    while (pos() <= extremePositionOfFrame)
+    {
+        string frame_id = getFrameId();
+        Parser frame(frame_id.c_str(), *this);
+        if (frame.parse() == noId)
+            shift(-3);
+    }
 }

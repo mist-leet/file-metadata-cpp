@@ -4,7 +4,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     Binary b("D:/abcd.txt");
-    if (b.parse())
+    if (b.parse())//parse проверяет, открыт ли файл
     {
         //parsing was successfull
     }

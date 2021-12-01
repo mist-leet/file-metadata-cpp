@@ -3,13 +3,13 @@
 #include "char_conversions.h"
 using namespace std;
 
-enum Byte_order {little_endian, big_endian, none};
+enum ByteOrder {littleEndian, bigEndian, none};
 
-enum String_encoding {iso_8859_1, ucs_2be, ucs_2le, utf_16be, utf_16le, utf_8, not_given};
+enum StringEncoding {iso_8859_1, ucs_2be, ucs_2le, utf_16be, utf_16le, utf_8, notGiven};
 
-enum Parsing_result {success, fail, no_id};
+enum ParsingResult {success, fail, noId};
 
-enum Tag_version {two, three, four, no_tag};
+enum TagVersion {two, three, four, noTag};
 
 typedef bitset<8> mByte;
 
@@ -25,7 +25,7 @@ ulong mbyte(ulong k = 1)
 
 long long power(long long, int);
 
-QString get_genre(uchar);
+QString getGenre(uchar);
 
 template<typename T>
 T my_min(T one, T two)
@@ -43,7 +43,7 @@ T my_max(T one, T two)
 
 ostream & operator << (ostream &, const QBitArray &);
 
-ushort cut_ulong(ulong);//чекает, не превышает ли код символа 65 535
+ushort cutUlong(ulong);//чекает, не превышает ли код символа 65 535
 
 QByteArray qUncompressWrapper(const QByteArray &raw_data, ulong expected_size);
 

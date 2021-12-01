@@ -3,34 +3,34 @@
 using namespace std;
 
 template<typename T>
-class Easy_ptr
+class EasyPtr
 {
     T *ptr{nullptr};
     uint size{0};
 
-    Easy_ptr(const Easy_ptr<T> &) = delete;
-    Easy_ptr(Easy_ptr<T> &&) = delete;
-    Easy_ptr<T> & operator= (const Easy_ptr<T> &) = delete;
-    Easy_ptr<T> & operator= (Easy_ptr<T> &&) = delete;
+    EasyPtr(const EasyPtr<T> &) = delete;
+    EasyPtr(EasyPtr<T> &&) = delete;
+    EasyPtr<T> & operator= (const EasyPtr<T> &) = delete;
+    EasyPtr<T> & operator= (EasyPtr<T> &&) = delete;
 
 public:
-    Easy_ptr(uint);
+    EasyPtr(uint);
 
-    Easy_ptr();
+    EasyPtr();
 
     bool allocate(uint);
 
     void free();
 
-    bool valid_pos(uint) const;
+    bool validPos(uint) const;
 
-    uint get_size() const;
+    uint getSize() const;
 
-    T * get_ptr();
+    T * getPtr();
 
-    const T * get_ptr() const;
+    const T * getPtr() const;
 
-    const T * const_ptr() const;
+    const T * constPtr() const;
 
     T & operator[] (uint);
 
@@ -46,26 +46,26 @@ public:
 
     operator bool () const;
 
-    ~Easy_ptr();
+    ~EasyPtr();
 };
 
 template<typename T>
-Easy_ptr<T>::Easy_ptr(uint sz)
+EasyPtr<T>::EasyPtr(uint sz)
 {
     allocate(sz);
 }
 
 template<typename T>
-Easy_ptr<T>::Easy_ptr() {}
+EasyPtr<T>::EasyPtr() {}
 
 template<typename T>
-Easy_ptr<T>::~Easy_ptr()
+EasyPtr<T>::~EasyPtr()
 {
     free();
 }
 
 template<typename T>
-bool Easy_ptr<T>::allocate(uint sz)
+bool EasyPtr<T>::allocate(uint sz)
 {
     if (!ptr && sz)
     {
@@ -79,7 +79,7 @@ bool Easy_ptr<T>::allocate(uint sz)
 }
 
 template<typename T>
-void Easy_ptr<T>::free()
+void EasyPtr<T>::free()
 {
     if (ptr) {delete [] ptr;}
     ptr = nullptr;
@@ -87,73 +87,73 @@ void Easy_ptr<T>::free()
 }
 
 template<typename T>
-bool Easy_ptr<T>::valid_pos(uint pos) const
+bool EasyPtr<T>::validPos(uint pos) const
 {
     return ptr && pos < size;
 }
 
 template<typename T>
-uint Easy_ptr<T>::get_size() const
+uint EasyPtr<T>::getSize() const
 {
     return size;
 }
 
 template<typename T>
-const T * Easy_ptr<T>::get_ptr() const
+const T * EasyPtr<T>::getPtr() const
 {
     return ptr;
 }
 
 template<typename T>
-T * Easy_ptr<T>::get_ptr()
+T * EasyPtr<T>::getPtr()
 {
     return ptr;
 }
 
 template<typename T>
-const T * Easy_ptr<T>::const_ptr() const
+const T * EasyPtr<T>::constPtr() const
 {
     return ptr;
 }
 
 template<typename T>
-T & Easy_ptr<T>::operator[] (uint pos)
+T & EasyPtr<T>::operator[] (uint pos)
 {
     return ptr[pos];
 }
 
 template<typename T>
-const T & Easy_ptr<T>::operator[] (uint pos) const
+const T & EasyPtr<T>::operator[] (uint pos) const
 {
     return ptr[pos];
 }
 
 template<typename T>
-T & Easy_ptr<T>::operator* ()
+T & EasyPtr<T>::operator* ()
 {
     return *ptr;
 }
 
 template<typename T>
-const T & Easy_ptr<T>::operator* () const
+const T & EasyPtr<T>::operator* () const
 {
     return *ptr;
 }
 
 template<typename T>
-T * Easy_ptr<T>::operator+ (uint offset)
+T * EasyPtr<T>::operator+ (uint offset)
 {
     return ptr + offset;
 }
 
 template<typename T>
-const T * Easy_ptr<T>::operator+ (uint offset) const
+const T * EasyPtr<T>::operator+ (uint offset) const
 {
     return ptr + offset;
 }
 
 template<typename T>
-Easy_ptr<T>::operator bool () const
+EasyPtr<T>::operator bool () const
 {
     return ptr;
 }

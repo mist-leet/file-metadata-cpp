@@ -2,14 +2,14 @@
 #include "tag.h"
 using namespace std;
 
-class Binary::V1 : public File_holder
+class Binary::V1 : public FileHolder
 {
 protected:
-    virtual bool parse_data() override final;
+    virtual bool parseData() override final;
 
-    virtual bool parse_header() override final;
+    virtual bool parseHeader() override final;
 
-    QString get_field(int) const;
+    QString getField(int) const;
 
 public:
     explicit V1(Binary & f);

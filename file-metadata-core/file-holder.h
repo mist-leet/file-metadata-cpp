@@ -2,19 +2,19 @@
 #include "binary.h"
 using namespace std;
 
-class File_holder
+class FileHolder
 {
 protected:
     Binary &file;
     bool unsynch;
-    bool synchsafe_header;
-    ulong length{0};//start_position + length < end_position , так как length не учитывает хедер
-    long long start_position;
-    long long end_position;//номер символа, следующего за последним символом File holder'а
+    bool synchsafeHeader;
+    ulong length{0};//startPosition + length < endPosition , так как length не учитывает хедер
+    long long startPosition;
+    long long endPosition;//номер символа, следующего за последним символом FileHolder'а
 
 private:
-    File_holder(const File_holder &) = delete;
-    File_holder & operator = (const File_holder &) = delete;
+    FileHolder(const FileHolder &) = delete;
+    FileHolder & operator = (const FileHolder &) = delete;
 
 protected:
     /*---<элементарные функции>---*/
@@ -39,29 +39,31 @@ protected:
     uchar getb(T &) const;
     /*---</элементарные функции>---*/
 
-    virtual Byte_order get_BOM() const;
+    virtual ByteOrder getBOM() const;
 
-    virtual QString get_iso8859_str() const;
+    virtual QString getIso8859Str() const;
 
-    virtual QString get_iso8859_str(const long long &) const;
+    virtual QString getIso8859Str(const long long &) const;
 
-    virtual QString get_utf16_str(Byte_order) const;//не чекает BOM
+    virtual QString getUtf16Str(ByteOrder) const;//не чекает BOM
 
-    virtual QString get_utf16_str(Byte_order, const long long &) const;//не чекает BOM
+    virtual QString getUtf16Str(ByteOrder, const long long &) const;//не чекает BOM
 
-    virtual QString get_utf8_str() const;
+    virtual QString getUtf8Str() const;
 
-    virtual QString get_utf8_str(const long long &) const;
+    virtual QString getUtf8Str(const long long &) const;
 
-    virtual QString get_ucs2_str(Byte_order) const;//не чекает BOM
+    virtual QString getUcs2Str(ByteOrder) const;//не чекает BOM
 
-    virtual QString get_ucs2_str(Byte_order, const long long &) const;//не чекает BOM
+    virtual QString getUcs2Str(ByteOrder, const long long &) const;//не чекает BOM
 
-    virtual QString get_encoding_dependent_string(String_encoding) const;
+    StringEncoding getStringEncoding(TagVersion);
 
-    virtual QString get_encoding_dependent_string(String_encoding, const long long &) const;
+    QString getEncodingDependentString(TagVersion) const;
 
-    virtual QByteArray get_binary_till_end() const;
+    QString getEncodingDependentString(TagVersion, const long long &) const;
+
+    virtual QByteArray getBinaryTillEnd() const;
 
     virtual bool skip() const;
 
@@ -75,54 +77,54 @@ protected:
 
     virtual long long size() const;
 
-    pair<int,bool> set_length(function<uchar(int &)>);
+    pair<int,bool> setLength(function<uchar(int &)>);
 
-    virtual string get_symbols(int);
+    virtual string getSymbols(int);
 
-    virtual bool parse_header() = 0;
+    virtual bool parseHeader() = 0;
 
-    virtual bool parse_data() = 0;
+    virtual bool parseData() = 0;
 
 public:
-    explicit File_holder(Binary &);//tag
+    explicit FileHolder(Binary &);//tag
 
-    File_holder(Binary &, bool);//frame
+    FileHolder(Binary &, bool);//frame
 
     virtual bool parse();
 
-    const Binary & get_file() const;
+    const Binary & getFile() const;
 
-    Binary & get_file();
+    Binary & getFile();
 
-    bool get_unsynch() const;
+    bool getUnsynch() const;
 
     operator bool () const;
 
     qint64 endpos() const;
 
-    virtual ~File_holder();
+    virtual ~FileHolder();
 };
 
 template<typename T>
-char File_holder::ch(T &count) const
+char FileHolder::ch(T &count) const
 {
     return file.ch(count);
 }
 
 template<typename T>
-uchar File_holder::get(T &count) const
+uchar FileHolder::get(T &count) const
 {
     return file.get(count);
 }
 
 template<typename T>
-char File_holder::uch(T &count) const
+char FileHolder::uch(T &count) const
 {
     return file.uch(count, unsynch);
 }
 
 template<typename T>
-uchar File_holder::getb(T &count) const
+uchar FileHolder::getb(T &count) const
 {
     return file.getb(count, unsynch);
 }

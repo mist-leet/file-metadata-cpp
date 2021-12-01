@@ -2,17 +2,17 @@
 using namespace std;
 
 Frame::Frame(Tag &t)
-    : File_holder(t.get_file(), t.get_unsynch())
+    : FileHolder(t.getFile(), t.getUnsynch())
 {}
 
 Frame::~Frame() = default;
 
-QString Frame::get_url() const
+QString Frame::getUrl() const
 {
-    return get_iso8859_str();
+    return getIso8859Str();
 }
 
-QString Frame::get_url(const long long & dur) const
+QString Frame::getUrl(const long long &dur) const
 {
-    return get_iso8859_str(dur);
+    return getIso8859Str(dur);
 }
