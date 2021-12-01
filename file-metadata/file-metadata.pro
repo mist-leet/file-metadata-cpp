@@ -6,6 +6,7 @@
 
 QT       += core gui
 
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = file-metadata
@@ -28,15 +29,18 @@ PRECOMPILED_HEADER = pch.h
 SOURCES += \
         main.cpp \
         widget.cpp \
-    interface.cpp
+    interface.cpp \
+    widget_info.cpp
 
 HEADERS += \
         widget.h \
     pch.h \
-    interface.h
+    interface.h \
+    widget_info.h
 
 FORMS += \
-        widget.ui
+        widget.ui \
+    widget_info.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

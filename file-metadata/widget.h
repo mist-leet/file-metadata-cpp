@@ -1,6 +1,6 @@
 #pragma once
 #include <QWidget>
-
+#include <QDropEvent>
 namespace Ui {
 class Widget;
 }
@@ -16,3 +16,4 @@ public:
 private:
     Ui::Widget *ui;
 };
+
