@@ -8,8 +8,7 @@ protected:
     ulong position{0};
 
     std::function<uchar()> getLambda{
-        [this]()
-        {
+        [this] {
             return this->get();
         }
     };
@@ -33,11 +32,9 @@ public:
     std::vector<uchar> getBinaryTillEnd();
 
     QString getEncodingDependentString(TagVersion);
-
     QString getEncodingDependentString(TagVersion, ulong);
 
     QString getUrl();
-
     QString getUrl(ulong);
 
     ulong get32Bit(ulong &count);

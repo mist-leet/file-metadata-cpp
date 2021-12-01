@@ -11,7 +11,6 @@ class Binary::V22 : public Tag
 
 protected:
     virtual bool parseHeader() override final;
-
     virtual bool parseData() override final;
 
     virtual std::string getFrameId() override final;

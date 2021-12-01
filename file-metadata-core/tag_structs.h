@@ -23,8 +23,7 @@ struct Restrictions
     Restrictions()
     {}
 
-    operator bool() const
-    {
+    operator bool() const {
         return presence;
     }
 };

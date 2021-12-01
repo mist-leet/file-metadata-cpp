@@ -14,33 +14,35 @@ uchar extr::get(std::function<bool (char *)> getChar) {
 }
 
 QChar extr::getUtf8(std::function<uchar ()> gc) {
+    qDebug() << "Call to getUtf8";
     ulong result = 0;
-    const mByte first = gc();
-    if (first[7])
-    {
-        const mByte second = gc();
-        if (first[5])
-        {
-            const mByte third = gc();
-            if (first[4])
-            {
-                const mByte fourth = gc();
+    mByte first = gc();
+    if (first[7]) {
+        mByte second = gc();
+        if (first[5]) {
+            mByte third = gc();
+            if (first[4]) {
+                mByte fourth = gc();
+                first[7] = first[6] = first[5] = first[4] = 0;
+                second[7] = third[7] = fourth[7] = 0;
                 result = first.to_ulong()*64*64*64 + second.to_ulong()*64*64 + third.to_ulong()*64 + fourth.to_ulong();
             }
-            else
-            {
+            else {
+                first[7] = first[6] = first[5] = 0;
+                second[7] = third[7] = 0;
                 result = first.to_ulong()*64*64 + second.to_ulong()*64 + third.to_ulong();
             }
         }
-        else
-        {
+        else {
+            first[7] = first[6] = 0;
+            second[7] = 0;
             result = first.to_ulong()*64 + second.to_ulong();
         }
     }
-    else
-    {
+    else {
         result = first.to_ulong();
     }
+    qDebug() << "getUtf8 got" << cutUlong(result) << endl;
     return QChar(cutUlong(result));
 }
 
@@ -139,7 +141,7 @@ QString extr::getqString(std::function<QChar(ulong &)> getqc, ulong len) {
         if (notNull(c))
             s.append(c);
     } while (notNull(c) && count < len);
-    qDebug() << "extr, getqString: going to return\n";
+    qDebug() << "extr, getqString: got '" << s << "'\n";
     return s;
 }
 
@@ -165,7 +167,7 @@ QList<QString> extr::getList(std::function<QChar(ulong &)> getqc, ulong len, QCh
 ulong extr::get32Bit(std::function<uchar()> gt) {
     ulong num = 0;
     for (int i = 3;i >=0;--i)
-        num += static_cast<ulong>(gt())*power(256,i);
+        num += static_cast<ulong>(gt())*Gl::power(256,i);
     return num;
 }
 

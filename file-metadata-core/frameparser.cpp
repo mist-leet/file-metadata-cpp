@@ -71,7 +71,7 @@ FrameParser::FrameParser(const char *const id, Binary::V22 &tag) {
 
 FrameParser::FrameParser(const char *const id, Binary::V23 &tag) {
         qDebug() << "FrameParser: constructing for V3\n";
-        if (isNull(id)) {frame = new(nothrow) Frames_3::PaddingHandler(tag);return;}
+        if (Gl::isNull(id)) {frame = new(nothrow) Frames_3::PaddingHandler(tag);return;}
         if (Binary::V23::isFreeFrame(id)) {frame = new(nothrow) Frames_3::UnknownFrame(tag);return;}
         if (Binary::V23::isUserdefUrl(id)) {frame = new(nothrow) Frames_3::UnknownFrame(tag);return;}
         if (Binary::V23::isUserdefTxt(id)) {frame = new(nothrow) Frames_3::UnknownFrame(tag);return;}
@@ -151,7 +151,7 @@ FrameParser::FrameParser(const char *const id, Binary::V23 &tag) {
 
 FrameParser::FrameParser(const char *const id, Binary::V24 &tag) {
         qDebug() << "FrameParser: constructing for V4\n";
-        if (isNull(id)) {frame = new(nothrow) Frames_4::PaddingHandler(tag);return;}
+        if (Gl::isNull(id)) {frame = new(nothrow) Frames_4::PaddingHandler(tag);return;}
         if (Binary::V24::isFreeFrame(id)) {frame = new(nothrow) Frames_4::UnknownFrame(tag);return;}
         if (Binary::V24::isUserdefUrl(id)) {frame = new(nothrow) Frames_4::UnknownFrame(tag);return;}
         if (Binary::V24::isUserdefTxt(id)) {frame = new(nothrow) Frames_4::UnknownFrame(tag);return;}
@@ -240,13 +240,16 @@ FrameParser::FrameParser(const char *const id, Binary::V24 &tag) {
 
 ParsingResult FrameParser::parse() const {
     if (frame) {
-        if (frame->parse())
+        if (frame->parse()) {
             return success;
-        else
+        }
+        else {
             return fail;
+        }
     }
-    else
+    else {
         return noId;
+    }
 }
 
 FrameParser::~FrameParser() {

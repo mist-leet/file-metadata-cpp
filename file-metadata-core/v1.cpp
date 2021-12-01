@@ -99,7 +99,7 @@ bool Binary::V1::parseData() {
     if (genre_id != 255)
         if (!file.getData().textFields.contains("Genre")) {
             qDebug() << "V1: getting genre\n";
-            file.getData().textFields["Genre"] = getGenre(genre_id);
+            file.getData().textFields["Genre"] = Gl::getGenre(genre_id);
         }
 
     return true;

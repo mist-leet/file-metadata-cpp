@@ -94,7 +94,7 @@ uchar toUchar(uchar u) {
 }
 
 bool notNull(QChar c) {
-    return c != nullqc;
+    return c.unicode();
 }
 
 ushort cutUlong(ulong code) {

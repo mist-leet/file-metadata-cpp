@@ -1,7 +1,7 @@
-#include "new.h"
+#include "global_functions.h"
 
 //https://en.wikipedia.org/wiki/List_of_ID3v1_Genres
-QString getGenre(uchar id) {
+QString Gl::getGenre(uchar id) {
     switch (id) {
     case 0:return "Blues";
     case 1:return "Classic Rock";

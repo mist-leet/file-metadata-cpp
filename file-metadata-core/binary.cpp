@@ -5,8 +5,8 @@ Binary::Binary(const QString &path)
     : QFile(path)
 {
     qDebug() << "Binary: constructing\n";
-    successfullyOpened = QFile::open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
-    if (successfullyOpened)
+    QFile::open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
+    if (QFileDevice::isOpen())
         seek(0);
 }
 
@@ -20,10 +20,11 @@ Binary::~Binary() {
 
 bool Binary::openf(const QString &path) {
     setFileName(path);
-    successfullyOpened = QFile::open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
-    if (successfullyOpened)
+    QFile::open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
+    if (QFileDevice::isOpen()) {
         seek(0);
-    return successfullyOpened;
+    }
+    return QFileDevice::isOpen();
 }
 
 char Binary::ch(ulong &count) {
@@ -47,7 +48,7 @@ uchar Binary::getb(ulong &count, bool unsynch) {
 }
 
 Binary::operator bool() const {
-    return successfullyOpened;
+    return QFileDevice::isOpen();
 }
 
 Binary & Binary::operator << (const string & s)
@@ -98,13 +99,15 @@ void Binary::oneByteBack() {
 }
 
 void Binary::seekForStartOfFooter() {
-    qDebug() << "Binary: seeking for start of the first footer" << end;
+    qDebug() << "Binary: seeking for start of the first footer" << endl;
     backFromEnd(v1Len);//перемещаемся на место предполагаемого тега v1
 
-    if (checkFor3Char("TAG"))
+    if (checkFor3Char("TAG")) {
         backFromEnd(v1Len + headerLen);
-    else
+    }
+    else {
         backFromEnd(headerLen);
+    }
 }
 
 QByteArray Binary::get_bytes(bool unsynch, ulong amount)
@@ -144,7 +147,7 @@ QString Binary::getUrl(bool unsynch, ulong len) {
 }
 
 QString Binary::getEncodingDependentString(bool unsynch, TagVersion v, ulong len) {
-    qDebug() << "Binary: calling function for encoding dependent string from extr namespace, length is" << len << ::end;
+    qDebug() << "Binary: calling function for encoding dependent string from extr namespace, length is" << len << endl;
     return extr::getEncodingDependentString(chLambda, unsynch, backLambda, len, v);
 }
 
@@ -172,14 +175,14 @@ void Binary::parseFromStart() {
             qDebug() << "Binary: starting to parse\n";
             TagParser v2(v, *this);
             v2.parse();
-            qDebug() << "Binary: ended parsing" << end;
+            qDebug() << "Binary: ended parsing" << endl;
         }
     } while (v != noTag);
-    qDebug() << "Binary: parsing from start complete" << end;
+    qDebug() << "Binary: parsing from start complete" << endl;
 }
 
 void Binary::parseFromEnd() {
-    qDebug() << "Binary: starting to seek for tag from end" << end;
+    qDebug() << "Binary: starting to seek for tag from end" << endl;
 
     seekForStartOfFooter();
 
@@ -193,40 +196,38 @@ void Binary::parseFromEnd() {
         if (v == noTag)
             break;
         else {
-            qDebug() << "Binary: starting to parse v2.4 header at the end of the file" << end;
+            qDebug() << "Binary: starting to parse v2.4 header at the end of the file" << endl;
             TagParser v2(v, *this);
             v2.parse();
             shift(-len - 20);//перемещаемся в место, где начинается футер предыдущего тега, если он есть
-            qDebug() << "Binary: parsing of the 2.4 header at the end complete" << end;
+            qDebug() << "Binary: parsing of the 2.4 header at the end complete" << endl;
         }
     } while (v != noTag);
 
-    qDebug() << "Binary: parsing from end complete" << end;
+    qDebug() << "Binary: parsing from end complete" << endl;
 }
 
 void Binary::parseV1() {
     if (data.needsV1()) {
-        qDebug() << "Binary: starting to seek for v1" << end;
+        qDebug() << "Binary: starting to seek for v1" << endl;
 
         backFromEnd(128);//перемещаемся на место предполагаемого тега v1
         if (checkFor3Char("TAG")) {
-            qDebug() << "Binary: starting to parse v1" << end;
+            qDebug() << "Binary: starting to parse v1" << endl;
             TagParser v1(*this);
             v1.parse();
-            qDebug() << "Binary: parsing v1 complete" << end;
+            qDebug() << "Binary: parsing v1 complete" << endl;
         }
     }
 }
 
 bool Binary::parse() {
-    if (successfullyOpened) {
+    if (QFileDevice::isOpen()) {
         qDebug() << "Binary: start parsing\n";
         parseFromStart();
         parseFromEnd();
-#ifndef NO_V1_PARSING
         parseV1();
-#endif
-        qDebug() << "Binary: parsing complete" << end;
+        qDebug() << "Binary: parsing complete" << endl;
         return data.hasInfo();
     }
     else
@@ -249,7 +250,7 @@ char Binary::charBackwards() {
 }
 
 bool Binary::checkFor3Char(std::string value) {
-    qDebug() << "Binary: checking for" << value.c_str() << end;
+    qDebug() << "Binary: checking for" << value.c_str() << endl;
     char id[4];
     for (int i = 0;i < 3;++i)
         getChar(id + i);
@@ -264,15 +265,15 @@ TagVersion Binary::v2Header() {
         if (get() != 255) {
             switch (version) {
             case 2: {
-                qDebug() << "Binary: v2 header found, version is" << 2 << end;
+                qDebug() << "Binary: v2 header found, version is" << 2 << endl;
                 return two;
             }
             case 3: {
-                qDebug() << "Binary: v2 header found, version is" << 3 << end;
+                qDebug() << "Binary: v2 header found, version is" << 3 << endl;
                 return three;
             }
             case 4: {
-                qDebug() << "Binary: v2 header found, version is" << 4 << end;
+                qDebug() << "Binary: v2 header found, version is" << 4 << endl;
                 return four;
             }
             default: {
@@ -293,7 +294,7 @@ TagVersion Binary::v2Header() {
 }
 
 ulong Binary::parseV2Footer() {//возвращает 0, если футер не найден или некорректен
-    qDebug() << "Binary: trying to parse v2 footer" << end;
+    qDebug() << "Binary: trying to parse v2 footer" << endl;
     if (checkFor3Char("3DI")) {
         if (get() == 4) {
             if (get() != 255) {
@@ -311,7 +312,7 @@ ulong Binary::parseV2Footer() {//возвращает 0, если футер н�
                     if (c > 127)//выставлен msb
                         return 0;
                     else
-                        len += c*power(128,i);
+                        len += c*Gl::power(128,i);
                 }
                 return len;
             }

@@ -17,7 +17,7 @@ bool Frame3::parseHeader() {
     ulong number_of_length_bytes = setLength([this](ulong &count) {
                                                 return this->getb(count);
                                             });
-    qDebug() << "Frame3: length is set, length =" << length << ::end;
+    qDebug() << "Frame3: length is set, length =" << length << endl;
     ulong extra_data_size = 0, number_of_flag_bytes = 0;
 
     dataLength = length;
@@ -39,7 +39,7 @@ bool Frame3::parseHeader() {
 
     if (format.test(7))
         for (int i = 3;i >= 0;--i)
-            uncompressedSize += static_cast<unsigned long>(getb(extra_data_size))*power(256,i);
+            uncompressedSize += static_cast<unsigned long>(getb(extra_data_size))*Gl::power(256,i);
 
     frameFormat.encryption = format.test(6);
     if (frameFormat.encryption)
@@ -65,7 +65,7 @@ bool Frame3::parseHeader() {
 
     dataLength -= extra_data_size;
 
-    qDebug() << "Frame3: header is successfully parsed, length is" << length << ::end;
+    qDebug() << "Frame3: header is successfully parsed, length is" << length << endl;
     return true;
 }
 

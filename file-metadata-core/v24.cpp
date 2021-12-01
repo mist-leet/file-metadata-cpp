@@ -6,12 +6,12 @@ Binary::V24::V24(Binary &f)
 
 Binary::V24::~V24() = default;
 
-bool Binary::V24::parseHeader()//парсит расширенный заголовок, если он есть
-{
+bool Binary::V24::parseHeader() {
     mByte flags = get();
-    for (unsigned i = 0;i < 4;++i)
+    for (unsigned i = 0;i < 4;++i) {
         if (flags.test(i))//если установлены неопределённые флаги
             return false;
+    }
 
     unsynch = flags.test(7);
     bool extdh = flags.test(6);
@@ -29,13 +29,13 @@ bool Binary::V24::parseHeader()//парсит расширенный загол�
         endPosition = startPosition + length + 10;
         extremePositionOfFrame = endPosition - 11;
     }
-    if (correctness && extdh)
+    if (correctness && extdh) {
         correctness = parseExtendedHeader();
+    }
     return correctness;
 }
 
-bool Binary::V24::parseExtendedHeader()
-{
+bool Binary::V24::parseExtendedHeader() {
     for (int i = 0;i < 4;++i)//длину тега можно узнать другим образом, поэтому байты длины можно игнорировать
         if (get(sizeOfExtendedHeader) > 127)
             return false;
@@ -62,8 +62,7 @@ bool Binary::V24::parseExtendedHeader()
     return true;
 }
 
-bool Binary::V24::setCrc()
-{    
+bool Binary::V24::setCrc() {
     if (get(sizeOfExtendedHeader) != 5)
         return false;
 
@@ -80,13 +79,12 @@ bool Binary::V24::setCrc()
 
     if (expectedCrc.second)
         for (int i = 4;i >= 0;--i)
-            expectedCrc.first += buf[i]*static_cast<unsigned long>(power(128,i));
+            expectedCrc.first += buf[i]*static_cast<unsigned long>(Gl::power(128,i));
 
     return true;
 }
 
-bool Binary::V24::setRestrictions()
-{
+bool Binary::V24::setRestrictions() {
     if (get(sizeOfExtendedHeader) != 1)
         return false;
     else
@@ -99,21 +97,21 @@ bool Binary::V24::setRestrictions()
     {
         restrictions.maxFrames = 32;
         if (r.test(6))
-            {restrictions.maxSize = kbyte(4);}
+            {restrictions.maxSize = Gl::kbyte(4);}
         else
-            {restrictions.maxSize = kbyte(40);}
+            {restrictions.maxSize = Gl::kbyte(40);}
     }
     else
     {
         if (r.test(6))
         {
             restrictions.maxFrames = 64;
-            restrictions.maxSize = kbyte(128);
+            restrictions.maxSize = Gl::kbyte(128);
         }
         if (!r.test(6))
         {
             restrictions.maxFrames = 128;
-            restrictions.maxSize = mbyte();
+            restrictions.maxSize = Gl::mbyte();
         }
     }
     //ограничения по кодировке текста
@@ -137,8 +135,7 @@ bool Binary::V24::setRestrictions()
     return true;
 }
 
-bool Binary::V24::isUserdefTxt(const char *const id)
-{
+bool Binary::V24::isUserdefTxt(const char *const id) {
     return  (id[0] == 'T' && Binary::V24::correctId(id) && strcmp(id, "TIT1") && strcmp(id, "TIT2") && strcmp(id, "TIT3")
             && strcmp(id, "TALB") && strcmp(id, "TOAL")
      && strcmp(id, "TRCK") && strcmp(id, "TPOS") && strcmp(id, "TSST") && strcmp(id, "TSRC") && strcmp(id, "TPE1")
@@ -151,28 +148,23 @@ bool Binary::V24::isUserdefTxt(const char *const id)
      && strcmp(id, "TDTG") && strcmp(id, "TSSE") && strcmp(id, "TSOA") && strcmp(id, "TSOP") && strcmp(id, "TSOT"));
 }
 
-bool Binary::V24::handleCrc()
-{
+bool Binary::V24::handleCrc() {
     ulong data_len = endPosition - pos();
     if (footerPresence)
         data_len -= 10;
 
-    if (!content.setDataAndCheckSrc(file, unsynch, data_len, expectedCrc.first))
-    {
+    if (!content.setDataAndCheckSrc(file, unsynch, data_len, expectedCrc.first)) {
         qCritical() << "посчитанный CRC32 не совпадает с переданным\n";
         return false;
     }
-    else
-    {
+    else {
         extremePositionOfFrame = content.size() - 11;
         return true;
     }
 }
 
-void Binary::V24::actualParse()
-{
-    while (pos() <= extremePositionOfFrame)
-    {
+void Binary::V24::actualParse() {
+    while (pos() <= extremePositionOfFrame) {
         std::string frame_id = getFrameId();
         FrameParser frame(frame_id.c_str(), *this);
         if (frame.parse() == noId)

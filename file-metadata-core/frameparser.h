@@ -13,9 +13,7 @@ class FrameParser
 public:
 
     FrameParser(const char *const, Binary::V22 &);//frame 2
-
     FrameParser(const char *const, Binary::V23 &);//frame 3
-
     FrameParser(const char *const, Binary::V24 &);//frame 4
 
     ParsingResult parse() const;

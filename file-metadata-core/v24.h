@@ -15,15 +15,11 @@ private:
 
 protected:
     virtual bool parseExtendedHeader() override final;
-
     virtual bool parseHeader() override final;
-
     virtual bool handleCrc() override final;
-
     virtual void actualParse() override final;
 
     bool setCrc();
-
     bool setRestrictions();
 
 public:

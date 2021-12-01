@@ -3,7 +3,8 @@
 #include "tag_structs.h"
 #include "file_structs.h"
 #include "new_char_extracting.h"
-#include "new.h"
+#include "global_functions.h"
+#include "debugfile.h"
 
 class Binary : public QFile
 {
@@ -13,7 +14,6 @@ class Binary : public QFile
     void oneByteBack();
 
 protected:
-    bool successfullyOpened{false};
     FileMetadata data{};
 
     std::function<char()> chLambda {

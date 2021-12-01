@@ -1,8 +1,8 @@
 #pragma once
-#include "pch.h"
+#include "binary.h"
 
 namespace Ui {
-class Widget;
+class Widget1;
 }
 
 class Widget : public QWidget
@@ -14,9 +14,10 @@ public:
 
     virtual void dragEnterEvent(QDragEnterEvent *) override;
 
+    void parseFile(const QString &);
+
     virtual ~Widget() override;
 
 private:
-    Ui::Widget *ui;
+    Ui::Widget1 *ui;
 };
-

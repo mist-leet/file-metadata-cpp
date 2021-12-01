@@ -14,9 +14,13 @@ protected:
 public:
     explicit Tag(Binary &);
 
-    static bool correctChar(char);
-
-    static bool correctChar(uchar);
+    template<typename T, class = std::enable_if_t<anyChar<T>>>
+    static bool correctChar(T);
 
     virtual ~Tag() override;
 };
+
+template<typename T, class >
+bool Tag::correctChar(T c) {
+    return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
+}

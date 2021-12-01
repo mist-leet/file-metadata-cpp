@@ -6,12 +6,12 @@ Binary::V23::V23(Binary &file) :
 
 Binary::V23::~V23() = default;
 
-bool Binary::V23::parseHeader()
-{
+bool Binary::V23::parseHeader() {
     mByte flags = get();
-    for (unsigned i = 0;i < 5;++i)
-        if (flags.test(i))//если установлены неопределённые флаги
+    for (unsigned i = 0;i < 5;++i) {
+        if (flags.test(i))
             return false;
+    }
 
     unsynch = flags.test(7);
     bool extdh = flags.test(6);
@@ -21,32 +21,34 @@ bool Binary::V23::parseHeader()
                                         return this->FileHolder::get();
                                     });
     endPosition = startPosition + 10 + length;
-    if (correctness && extdh)
+    if (correctness && extdh){
         correctness = parseExtendedHeader();
+    }
     extremePositionOfFrame = endPosition - 11 - sizeOfPadding;
     return correctness;
 }
 
-bool Binary::V23::parseExtendedHeader()
-{
-    for (int i = 0;i < 4;++i)
+bool Binary::V23::parseExtendedHeader() {
+    for (int i = 0;i < 4;++i) {
         getb(sizeOfExtendedHeader);
+    }
 
     expectedCrc.second = (getb(sizeOfExtendedHeader) > 127);//установлен первый бит первого флага
     getb(sizeOfExtendedHeader);//второй байт не имеет значимого контента
 
-    for (int i = 3;i >= 0;--i)
-        sizeOfPadding += getb(sizeOfExtendedHeader)*power(256,i);
+    for (int i = 3;i >= 0;--i) {
+        sizeOfPadding += getb(sizeOfExtendedHeader)*Gl::power(256,i);
+    }
 
-    if (expectedCrc.second)
-        for (int i = 3;i >= 0;--i)
-            expectedCrc.first += getb(sizeOfExtendedHeader)*power(256,i);
-
+    if (expectedCrc.second) {
+        for (int i = 3;i >= 0;--i) {
+            expectedCrc.first += getb(sizeOfExtendedHeader)*Gl::power(256,i);
+        }
+    }
     return true;
 }
 
-bool Binary::V23::isUserdefTxt(const char *const id)
-{
+bool Binary::V23::isUserdefTxt(const char *const id) {
     return  (id[0] == 'T' && Binary::V23::correctId(id) && strcmp(id, "TALB") && strcmp(id, "TBPM")
      && strcmp(id, "TCOP") && strcmp(id, "TDAT") && strcmp(id, "TDLY") && strcmp(id, "TENC")
      && strcmp(id, "TEXT") && strcmp(id, "TFLT") && strcmp(id, "TIME") && strcmp(id, "TIT1")
@@ -75,7 +77,8 @@ void Binary::V23::actualParse() {
         std::string frame_id = getFrameId();
         std::cout << "V2.3: got frame ID '" << frame_id.c_str() << "'\n\n";
         FrameParser frame(frame_id.c_str(), *this);
-        if (frame.parse() == noId)
+        if (frame.parse() == noId) {
             shift(-3);
+        }
     }
 }

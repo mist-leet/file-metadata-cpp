@@ -21,7 +21,6 @@ PRECOMPILED_HEADER = pch.h
 
 HEADERS += \
         pch.h \
-    new.h \
     binary.h \
     v22.h \
     v23.h \
@@ -35,7 +34,6 @@ HEADERS += \
     frame.h \
     tag34.h \
     frame_34.h \
-    easy_ptr.h \
     frame_structs.h \
     tag_structs.h \
     file_contents.h \
@@ -44,7 +42,6 @@ HEADERS += \
 
 SOURCES += \
         main.cpp \
-    new.cpp \
     binary.cpp \
     v22.cpp \
     v23.cpp \
@@ -59,12 +56,8 @@ SOURCES += \
     tag.cpp \
     frame.cpp \
     tag34.cpp \
-    frames4RP.cpp \
-    frames4GCLO.cpp \
-    frames4SA.cpp \
     frames4UEM.cpp \
     frames4text.cpp \
-    frames4url.cpp \
     frame_34.cpp \
     frames4unknown.cpp \
     file_contents.cpp \
@@ -74,10 +67,12 @@ SOURCES += \
     new_char_extracting.cpp \
     tagparser.cpp \
     frameparser.cpp \
-    widget1.cpp
+    widget.cpp \
+    global_functions.cpp \
+    debugfile.cpp
 
 FORMS += \
-    widget1.ui
+    widget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

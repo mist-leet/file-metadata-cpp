@@ -1,7 +1,7 @@
-#include "new.h"
+#include "global_functions.h"
 using std::vector;
 
-long long power(long long num, int pow) {
+long long Gl::power(long long num, int pow) {
     if (pow < 0)
         return 0;
     else {
@@ -37,7 +37,7 @@ QByteArray qUncompressWrapper(QByteArray &&raw_data, ulong expected_size)
     return qUncompress(raw_data);
 }
 
-uint toUint(const QString &s) {
+uint Gl::toUint(const QString &s) {
     uint a = 0;
     for (int i = s.length() - 1;i >= 0;--i)
         if (s[i].isDigit())

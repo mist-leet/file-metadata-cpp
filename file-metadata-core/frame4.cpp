@@ -5,8 +5,7 @@ Frame4::Frame4(Binary::V24 &t)
     , tag(t)
 {
     synchsafeHeader = true;
-    if (tag.hasPreextractedData())
-    {
+    if (tag.hasPreextractedData()) {
         startPosition = tag.getContent().pos() - 4;
         endPosition = startPosition + 4;
     }
@@ -70,12 +69,12 @@ bool Frame4::parseHeader() {
 
         if (correct)
             for (int i = 3;i >= 0;--i)
-                uncompressedSize += static_cast<unsigned long>(buf[i])*power(128,i);
+                uncompressedSize += static_cast<unsigned long>(buf[i])*Gl::power(128,i);
     }
 
     dataLength -= extra_data_size;
 
-    qDebug() << "Frame4: successfully parsed header, length is" << length << ::end;
+    qDebug() << "Frame4: successfully parsed header, length is" << length << endl;
     return true;
 }
 

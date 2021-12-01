@@ -26,12 +26,12 @@ uchar FileContents::get(ulong &count) {
 }
 
 bool FileContents::decompressRawData(Binary &file, bool unsynch, ulong raw_data_size,  ulong expected_data_size) {
-    arr = uncompressWrapper(file.getBytes(unsynch,raw_data_size),expected_data_size);
+    arr = Gl::uncompressWrapper(file.getBytes(unsynch,raw_data_size),expected_data_size);
     return !arr.empty();
 }
 
 bool FileContents::decompressRawData(FileContents &other_storage, ulong raw_data_size, ulong expected_data_size) {
-    arr = uncompressWrapper(other_storage.shareData(raw_data_size),expected_data_size);
+    arr = Gl::uncompressWrapper(other_storage.shareData(raw_data_size),expected_data_size);
     return !arr.empty();
 }
 
