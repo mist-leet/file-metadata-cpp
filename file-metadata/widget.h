@@ -1,6 +1,4 @@
-#ifndef WIDGET_H
-#define WIDGET_H
-
+#pragma once
 #include <QWidget>
 
 namespace Ui {
@@ -18,5 +16,3 @@ public:
 private:
     Ui::Widget *ui;
 };
-
-#endif // WIDGET_H
