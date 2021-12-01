@@ -4,6 +4,9 @@
 #include <string>
 #include <bitset>
 #include <vector>
+#include <unordered_set>
 #include <unordered_map>
-#include <cmath>
-#include <cstring>
+#include <QFile>
+#include <QBitArray>
+#include <QByteArray>
+#include <QString>

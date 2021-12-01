@@ -1,8 +1,6 @@
-#pragma once
-#include "pch.h"
 #include "handler.h"
 using namespace std;
-
+/*
 //вставляет строку str с позиции bias
 void binaryfile::insert(const string & str, const li & bias)
 {
@@ -29,9 +27,11 @@ void binaryfile::insert(const string & str, const li & bias)
                 read(buf_c,len);
                 buf_c[len] = '\0';
                 seekp(pos,ios::beg);
+                cout << "1: going to put '" << buf_c << "' from " << tellg() << " pos\n";
                 *this << buf_c;
             }
             seekp(bias,ios::beg);
+            cout << "1: going to put '" << str << "' from " << tellg() << " bias = " << bias << '\n';
             *this << str;
             delete[] buf_c;
         }
@@ -44,367 +44,15 @@ void binaryfile::insert(const string & str, const li & bias)
             seekp(bias,ios::beg);
             *this << str;
             seekp(bias + strsize,ios::beg);
+            cout << "2: going to put '" << buf_c << "' from " << tellg() << " pos\n";
             *this << buf_c;
             delete[] buf_c;
         }
     }
 }
 
-//устанавливает длину файла в байтах, оставляя файловый указатель на том же месте
-li binaryfile::get_size()
-{
-    li current = tellg();
-    seekg(0,ios::end);
-    li fsize = tellg();
-    seekg(current,ios::beg);
-    return fsize;
-}
-
-//переводит 4-байтный synchsafe int (bitset<32>) в двоичную запись обычного int
-pair<bitset<28>,bool> synchsafe_handler(const bitset<32> & s_safe)
-{
-    bitset<28> val;
-    for (unsigned i = 7;i < 32;i += 8)
-        if (s_safe[i])
-            return make_pair(val,false);//если старший бит любого байта установлен в 1, то запись некорректна, тег нечитабелен
-    for (unsigned i = 0;i < 28;++i)
-        val[i] = s_safe.test(i + i / 7);
-    return make_pair(val,true);
-}
-
-//принимает массив символов и переводит первые четыре в bitset<32>, затем в bitset<28>
-pair<bitset<28>,bool> synchsafe_handler(const char * const text)
-{
-    Byte binary_text[4];
-    for (int i = 0;i < 4;++i)
-        binary_text[i] = text[i];
-    bitset<32> binary_text_1;
-    for (int i = 0;i < 32;++i)
-        binary_text_1[i] = binary_text[i / 8][i % 8];
-    return synchsafe_handler(binary_text_1);
-}
-
-//устанавливает флаг correct, сбрасывает все остальные флаги; вызывается при парсинге нового тега
-void Tag::set_to_initial_state()
-{
-    correct = true;
-    unsynch = experimental = footer = extd_data.first.CRC32.second = extd_data.first.update = t_count =
-    extd_data.first.restrictions.second = extd_data.first.padding_size.second = extd_data.second = false;
-}
-
-//определяет CRC-32 для тега v2.4
-void binaryfile::get_CRC32_v24()
-{
-    bitset<40> s_safe;
-    Byte byte;
-    for (int i = 0;i < 5;++i)
-    {
-        byte = getb(tag.t_count);
-        for (int j = 0;j < 8;++j)
-            s_safe[(4 - i)*8 + j] = byte[j];
-    }
-
-    for (int i = 7;i < 40;i += 8)
-        if (s_safe[i])
-        {
-            tag.extd_data.first.CRC32.second = false;
-            return;
-        }
-
-    tag.extd_data.first.CRC32.second = true;
-    for (int i = 0;i < 32;++i)
-        tag.extd_data.first.CRC32.first[i] = s_safe.test(i + i/7);
-}
-
-//определяет ограничения для тега v2.4
-void binaryfile::get_restrictions_v24()
-{
-    Byte r = getb(tag.t_count);
-    tag.extd_data.first.restrictions.second = true;
-    //ограничения на размер изображений
-    if (r[1])
-    {
-        if (r[0])
-        {//11
-            tag.extd_data.first.restrictions.first.pic_size_rest = true;
-            tag.extd_data.first.restrictions.first.max_pic_size = 64;
-            tag.extd_data.first.restrictions.first.min_pic_size = 64;
-        }
-        else
-        {//10
-            tag.extd_data.first.restrictions.first.pic_size_rest = true;
-            tag.extd_data.first.restrictions.first.max_pic_size = 64;
-            tag.extd_data.first.restrictions.first.min_pic_size = 0;
-        }
-    }
-    else
-    {
-        if (r[0])
-        {//01
-            tag.extd_data.first.restrictions.first.pic_size_rest = true;
-            tag.extd_data.first.restrictions.first.max_pic_size = 256;
-            tag.extd_data.first.restrictions.first.min_pic_size = 0;
-        }
-        else//00
-            tag.extd_data.first.restrictions.first.pic_size_rest = false;
-    }
-    //ограничения на формат изображений
-    if (r[2])//1
-        tag.extd_data.first.restrictions.first.pic_type_rest = true;
-    else//0
-        tag.extd_data.first.restrictions.first.pic_type_rest = false;
-    //ограничения на размер текстовых полей
-    if (r[4])
-    {
-        if (r[3])//11
-            tag.extd_data.first.restrictions.first.max_char_per_frame = 30;
-        else//10
-            tag.extd_data.first.restrictions.first.max_char_per_frame = 128;
-    }
-    else
-    {
-        if (r[3])//01
-            tag.extd_data.first.restrictions.first.max_char_per_frame = 1024;
-        else//00
-            tag.extd_data.first.restrictions.first.max_char_per_frame = 268435445;
-    }
-    //ограничения на кодировку текста
-    if (r[5])//1
-        tag.extd_data.first.restrictions.first.encoding_rest = true;
-    else//0
-        tag.extd_data.first.restrictions.first.encoding_rest = false;
-    //ограничения на размер тега
-    if (r[7])
-    {
-        if (r[6])
-        {//11
-            tag.extd_data.first.restrictions.first.max_frames = 32;
-            tag.extd_data.first.restrictions.first.max_size = 4096;//4 kb
-        }
-        else
-        {//10
-            tag.extd_data.first.restrictions.first.max_frames = 32;
-            tag.extd_data.first.restrictions.first.max_size = 40960;//40 kb
-        }
-    }
-    else
-    {
-        if (r[6])
-        {//01
-            tag.extd_data.first.restrictions.first.max_frames = 64;
-            tag.extd_data.first.restrictions.first.max_size = 131072;//128 kb
-        }
-        else
-        {//00
-            tag.extd_data.first.restrictions.first.max_frames = 128;
-            tag.extd_data.first.restrictions.first.max_size = 1048576;//1 Mb
-        }
-    }
-}
-
-//обрабатывает расширенный хедер в v2.4
-void binaryfile::parse_extd_h_4()
-{
-    for (int i = 0;i < 5;++i)
-        getb(tag.t_count);
-    Byte flags = getb(tag.t_count);
-    if (flags[6])
-    {
-        getb(tag.t_count);
-        tag.extd_data.first.update = true;
-    }
-    if (flags[5])
-    {
-        getb(tag.t_count);
-        get_CRC32_v24();
-    }
-    if (flags[4])
-    {
-        getb(tag.t_count);
-        get_restrictions_v24();
-    }
-}
-
-//обрабатывает расширенный хедер в v2.3
-void binaryfile::parse_extd_h_3()
-{
-    for (int i = 0;i < 4;++i)
-        getb(tag.t_count);
-    Byte f = getb(tag.t_count);
-    bool crc_present = f[7];
-    getb(tag.t_count);
-
-    Byte buffer_arr[4];
-    for (int i = 0;i < 4;++i)
-        buffer_arr[i] = getb(tag.t_count);
-
-    bitset<32> padding_size;
-    for (int i = 31;i >= 0;--i)
-        padding_size[i] = buffer_arr[i / 8][i % 8];
-
-    tag.extd_data.first.padding_size.second = true;
-    tag.extd_data.first.padding_size.first = padding_size.to_ulong();
-
-    if (crc_present)
-    {
-        for (int i = 0;i < 4;++i)
-            buffer_arr[i] = getb(tag.t_count);
-        for (int i = 31;i >= 0;--i)
-            tag.extd_data.first.CRC32.first[i] = buffer_arr[i / 8][i % 8];
-        tag.extd_data.first.CRC32.second = true;
-    }
-}
-
-//обрабатывает хедер
-bool binaryfile::parse_header(int version)
-{
-    //чтение флагов
-    Byte flags = getb(tag.t_count);
-    cout << "flags: " << flags << '\n';
-    for (int i = 0;i < 4;++i)
-        if (flags[i])
-        {
-            tag.correct = false;
-            return false;//если установлены неопределённые флаги, то тег нечитаем
-        }
-    tag.unsynch = flags[7];
-    switch (version)
-    {
-        case 2:
-            for (int i = 4;i < 7;++i)
-                if (flags[i])
-                {
-                    tag.correct = false;
-                    return false;//если установлены неопределённые флаги, то тег нечитаем
-                }
-            break;
-        case 3:
-            if (flags[4])
-            {
-                tag.correct = false;
-                return false;//если установлен неопределённый флаг, то тег нечитаем
-            }
-            tag.extd_data.second = flags[6];
-            tag.experimental = flags[5];
-            break;
-        case 4:
-            tag.extd_data.second = flags[6];
-            tag.experimental = flags[5];
-            tag.footer = flags[4];
-            break;
-    }
-    //чтение длины
-    char s_safe_len[4];
-    for (int i = 0;i < 4;++i)
-        s_safe_len[i] = getb(tag.t_count);
-    pair<bitset<28>,bool> binary_len = synchsafe_handler(s_safe_len);
-    if (!binary_len.second)
-    {
-        tag.correct = false;
-        return false;//если не соблюдена synchsafety в байтах длины, тег считается нечитабельным
-    }
-    tag.len = binary_len.first.to_ulong();
-    cout << "len = " << tag.len / pow(2,20) << " Mb\n";
-    //чтение расширенного заголовка
-    if (tag.extd_data.second)
-        switch(version)
-        {
-            case 3:
-                parse_extd_h_3();
-                break;
-            case 4:
-                parse_extd_h_4();
-                break;
-        }
-    return true;
-}
-
-//обрабатывает тег ID3v2.2
-void binaryfile::handle_v22()
-{
-    if (!parse_header(2))
-        return;
-    cout << "header is correct\n";
-}
-
-//обрабатывает тег ID3v2.3
-void binaryfile::handle_v23()
-{
-    if (!parse_header(3))
-        return;
-    cout << "header is correct\n";
-}
-
-//обрабатывает тег ID3v2.4
-void binaryfile::handle_v24()
-{
-    if (!parse_header(4))
-        return;
-    cout << "header is correct\n";
-
-    tag.start_pos = tellg();
-    char ID[id3_frame_ID_len + 1];
-    while (tellg() <= tag.start_pos + tag.len - min_id3_frame_len)
-    {
-        read(ID,id3_frame_ID_len);//нужно вернуться назад на 3 символа, чтобы всё прочекать
-        seekg(-3,ios::cur);//возвращаемся на 3 символа назад, чтобы ничего не пропустить; вообще, это нужно делать где нибудь в другом месте
-        ID[4] = 0;
-        parse_frame(ID);
-    }
-
-}
-
-//обрабатывает тег ID3v2
-void binaryfile::handle_id3v2_tag()
-{
-    tag.set_to_initial_state();
-    int version = getb(tag.t_count);
-    cout << "vers: " << version << '\n';
-    int revision = getb(tag.t_count);//ревизии имеют обратную совместимость, поэтому их необязательно сохранять
-    if (revision < 255)
-        switch (version)
-        {
-            case 2:
-                handle_v22();
-                break;
-            case 3:
-                handle_v23();
-                break;
-            case 4:
-                handle_v24();
-                break;
-        }
-}
-
-//возвращает байт из тега с учётом десинхронизации: для v2.2 и v2.3, а также для v2.4, если все фреймы десинхронизированы
-int binaryfile::getb()
-{
-    return getb(tag.unsynch);//насколько я понял, член класса не может быть параметром по умолчанию
-}
-
-//возвращает байт с учётом десинхронизации
-int binaryfile::getb(bool unsynch)
-{
-    if (unsynch)
-    {
-        int current_byte = get(), next_byte = get();//берём текущий и сразу следующий байт
-        tag.t_count += 2;//считали 2 байта
-        if (current_byte != 255 | next_byte != 0)//если байты не являются 0xFF 0x00
-        {
-            --tag.t_count;//считали только 1 байт
-            seekg(-1,ios::cur);//возвращаемся на позицию назад, как будто не считывали второй байт
-        }
-        return current_byte;
-    }
-    else
-    {
-        ++tag.t_count;
-        return get();
-    }
-}
-
 //парсит файл
-void binaryfile::parse()
+void binaryfile::parse_file()
 {
     //Минимальный размер ID3-тега - 21 байт. Из них первые 3 - это символы "ID3".
     //То есть нужно пропарсить первые (size - 21) байт на наличие ID3-тега
@@ -421,99 +69,406 @@ void binaryfile::parse()
     }
 }
 
-//парсит фрейм
-bool binaryfile::parse_frame(const char * const ID)
+//проверяет, является ли строка заголовком фрейма, если да, то парсит соответствующий фрейм
+bool binaryfile::parse_frame_24(const char * const id)//id должен ОБЯЗАТЕЛЬНО быть 0-терминирован
 {
-    return 0;
-}
-
-//возвращает числовое значение двух байтов из тега с учётом порядка бит и десинхронизации
-unsigned binaryfile::get2b(char byteorder = 'B')//B - big-endian, L - little-endian
-{
-    return get2b(tag.unsynch, byteorder);
-}
-
-//возвращает числовое значение двух байтов с учётом порядка бит и десинхронизации (только для v2.4)
-unsigned binaryfile::get2b(bool unsynch, char byteorder = 'B')//BE - big-endian, L - little-endian
-{
-    unsigned first = getb(unsynch), second = getb(unsynch);
-    if (byteorder == 'B')
-        return first*256 + second;
-    else
-        return second*256 + first;
-}
-
-//возвращает метку порядка байтов, флаг десинхронизации берётся из свойств тега
-char binaryfile::getBOM()//возвращает 'B', если big-endian, 'L', если little-endian, '0', если BOM отсутствует
-{
-    return getBOM(tag.unsynch);
-}
-
-//возвращает метку порядка байтов
-char binaryfile::getBOM(bool unsynch)//возвращает 'B', если big-endian, 'L', если little-endian, '0', если BOM отсутствует
-{
-    int first = getb(unsynch), second = getb(unsynch);
-    if (first == 254 & second == 255)
-        return 'B';
-    else if (first == 255 & second == 254)
-        return 'L';
-    else return '0';
-}
-
-//возвращает десятеричный код символа из UTF-8, флаг десинхронизации берётся из свойств тега
-long binaryfile::utf8()
-{
-    return utf8(tag.unsynch);
-}
-
-//возвращает десятеричный код символа из UTF-8
-long binaryfile::utf8(bool unsynch)
-{
-    Byte byte1 = getb(unsynch);
-    if (byte1[7])
+    switch (id[0])
     {
-        Byte byte2 = getb(unsynch);
-        if (byte1[5])
+    case 'T'://группа текстовых фреймов
+        if (check_str(id + 1))//если символы окажутся не заголовком фрейма
+            if (parse_text_frame(id))//или фрейм окажется сломанным
+                break;//то организуется fall through до default
+
+    case 'W'://группа фреймов, содержащих URL
+        if (check_str(id + 1))
+            if (parse_url_frame(id))
+                break;
+
+    case 'M':
+        if (!strcmp(id,"MCDI"))
         {
-            Byte byte3 = getb(unsynch);
-            if (byte1[4])
-            {
-                Byte byte4 = getb(unsynch);
-                bitset<21> value;
-                for (int i = 20;i > 17;--i)
-                    value[i] = byte1[i - 18];
-                for (int i = 17;i > 11;--i)
-                    value[i] = byte2[i - 12];
-                for (int i = 11;i > 5;--i)
-                    value[i] = byte3[i - 6];
-                for (int i = 5;i >= 0;--i)
-                    value[i] = byte4[i];
-                return value.to_ulong();
-            }
-            else
-            {
-                bitset<16> value;
-                for (int i = 15;i > 11;--i)
-                    value[i] = byte1[i - 12];
-                for (int i = 11;i > 5;--i)
-                    value[i] = byte2[i - 6];
-                for (int i = 5;i >= 0;--i)
-                    value[i] = byte3[i];
-                return value.to_ulong();
-            }
+            if (parse_MCDI())
+                break;
         }
-        else
+        else if (!strcmp(id,"MLLT"))
         {
-            bitset<11> value;
-            for (int i = 10;i > 5;--i)
-                value[i] = byte1[i - 6];
-            for (int i = 5;i >= 0;--i)
-                value[i] = byte2[i];
-            return value.to_ulong();
+                if (parse_MLLT())
+                    break;
         }
+
+    case 'E':
+        if (!strcmp(id,"ETCO"))
+        {
+            if (parse_ETCO())
+                break;
+        }
+        else if (!strcmp(id,"EQU2"))
+        {
+            if (parse_EQU2())
+                break;
+        }
+        else if (!strcmp(id,"ENCR"))
+        {
+            if (parse_ENCR())
+                break;
+        }
+
+    case 'S':
+        if (!strcmp(id,"SYTC"))
+        {
+            if (parse_SYTC())
+                break;
+        }
+        else if (!strcmp(id,"SYLT"))
+        {
+            if (parse_SYLT())
+                break;
+        }
+        else if (!strcmp(id,"SIGN"))
+        {
+            if (parse_SIGN())
+                break;
+        }
+        else if (!strcmp(id,"SEEK"))
+        {
+            if (parse_SEEK())
+                break;
+        }
+
+    case 'U':
+        if (!strcmp(id, "USLT"))
+        {
+            if (parse_USLT())
+                break;
+        }
+        else if (!strcmp(id,"USER"))
+        {
+            if (parse_USER())
+                break;
+        }
+
+    case 'C':
+        if (!strcmp(id,"COMM"))
+        {
+            if (parse_COMM())
+                break;
+        }
+        else if (!strcmp(id,"COMR"))
+        {
+            if (parse_COMR())
+                break;
+        }
+
+    case 'R':
+        if (!strcmp(id,"RVA2"))
+        {
+            if (parse_RVA2())
+                break;
+        }
+        else if (!strcmp(id,"RVRB"))
+        {
+            if (parse_RVRB())
+                break;
+        }
+        else if (!strcmp(id,"RBUF"))
+            if (parse_RBUF())
+                break;
+
+    case 'A':
+        if (!strcmp(id,"APIC"))
+        {
+            if (parse_APIC())
+                break;
+        }
+        else if (!strcmp(id,"AENC"))
+        {
+            if (parse_AENC())
+                break;
+        }
+        else if (!strcmp(id,"ASPI"))
+            if (parse_ASPI())
+                break;
+
+    case 'P':
+        if (!strcmp(id,"PCNT"))
+        {
+            if (parse_PCNT())
+                break;
+        }
+        else if (!strcmp(id,"POPM"))
+        {
+            if (parse_POPM())
+                break;
+        }
+        else if (!strcmp(id,"POSS"))
+        {
+            if (parse_POSS())
+                break;
+        }
+        else if (!strcmp(id,"PRIV"))
+        {
+            if (parse_unknown_frame())
+                break;
+        }
+
+    case 'G':
+        if (!strcmp(id,"GRID"))
+        {
+            if (parse_GRID())
+                break;
+        }
+        else if (!strcmp(id,"GEOB"))
+        {
+            if (parse_GEOB())
+                break;
+        }
+
+    case 'L':
+        if (!strcmp(id,"LINK"))
+            if (parse_LINK())
+                break;
+
+    case 'O':
+        if (!strcmp(id,"OWNE"))
+            if (parse_OWNE())
+                break;
+
+    case 'X':
+    case 'Y':
+    case 'Z':
+        if (check_str(id + 1))
+            if (parse_unknown_frame())
+                break;
+
+    default:
+        seekg(-3,ios::cur);
+    }
+}
+
+//проверяет, может ли символ входить в заголовок фрейма
+bool check_char(char c)
+{
+    if ((c >= 'A' & c <= 'Z') | (c >= '0' & c <= '9'))
+        return true;
+    else
+        return false;
+}
+
+//проверяет, может ли строка являться заголовком или частью заголовка фрейма
+bool check_str(const char * const s)
+{
+    for (int i = 0;i < 5;++i)
+    {
+        if (s[i] == 0)
+            return true;
+        else if (!check_char(s[i]))
+            return false;
+    }
+    return false;
+}
+
+//парсит текстовый фрейм, возвращает true, если парсинг прошёл успешно (фрейм не поломан)
+bool binaryfile::parse_text_frame(const char * const)
+{
+
+}
+
+//парсит URL-фрейм, возвращает true, если парсинг прошёл успешно (фрейм не поломан)
+bool binaryfile::parse_url_frame(const char * const)
+{
+
+}
+
+//
+bool binaryfile::parse_MCDI()
+{
+
+}
+
+//
+bool binaryfile::parse_MLLT()
+{
+
+}
+
+//
+bool binaryfile::parse_ETCO()
+{
+
+}
+
+//
+bool binaryfile::parse_EQU2()
+{
+
+}
+
+//
+bool binaryfile::parse_ENCR()
+{
+
+}
+
+//
+bool binaryfile::parse_SYTC()
+{
+
+}
+
+//
+bool binaryfile::parse_SYLT()
+{
+
+}
+
+//
+bool binaryfile::parse_SIGN()
+{
+
+}
+
+//расстояние от конца данного тега до начала следующего
+bool binaryfile::parse_SEEK()//пока только для v2.4
+{
+    pair<Frame_header,bool> header = parse_frame_header(4);
+    if (!header.second)
+        return false;
+    else
+    {
+        if (tag.t_unique_frames.find("SEEK") == tag.t_unique_frames.end())//если это первый SEEK в теге
+        {
+            tag.t_offset_to_next_tag.first = static_cast<unsigned long>(getb(header.first.f_unsynch))*256*256*256 +
+                                             static_cast<unsigned long>(getb(header.first.f_unsynch))*256*256 +
+                                             static_cast<unsigned long>(getb(header.first.f_unsynch))*256 +
+                                             static_cast<unsigned long>(getb(header.first.f_unsynch));
+            tag.t_offset_to_next_tag.second = true;
+            tag.t_unique_frames.insert("SEEK");
+            return true;
+        }
+        else//если не первый SEEK, переезжаем в начало следующего фрейма
+        {
+            seekg(header.first.f_size,ios::cur);
+            return false;//если в нарушение стандарта в теге появятся более 1 фрейма SEEK, то учтён будет только первый,
+        }                //хотя это, возможно, не совсем логично
+    }//по стандарту в фрейме должно быть только 4 значащих байта, хранящие отступ до следующего тега.
+}    //впоследствии можно добавить обработку некорректного фрейма
+
+//
+bool binaryfile::parse_USLT()
+{
+
+}
+
+//
+bool binaryfile::parse_USER()
+{
+
+}
+
+//
+bool binaryfile::parse_COMM()
+{
+
+}
+
+//
+bool binaryfile::parse_COMR()
+{
+
+}
+
+//
+bool binaryfile::parse_RVA2()
+{
+
+}
+
+//
+bool binaryfile::parse_RVRB()
+{
+
+}
+
+//
+bool binaryfile::parse_RBUF()
+{
+
+}
+
+//
+bool binaryfile::parse_APIC()
+{
+
+}
+
+//
+bool binaryfile::parse_AENC()
+{
+
+}
+
+//
+bool binaryfile::parse_ASPI()
+{
+
+}
+
+//
+bool binaryfile::parse_PCNT()
+{
+
+}
+
+//
+bool binaryfile::parse_POPM()
+{
+
+}
+
+//
+bool binaryfile::parse_POSS()
+{
+
+}
+
+//
+bool binaryfile::parse_GRID()
+{
+
+}
+
+//
+bool binaryfile::parse_GEOB()
+{
+
+}
+
+//
+bool binaryfile::parse_LINK()
+{
+
+}
+
+//
+bool binaryfile::parse_OWNE()
+{
+
+}
+
+//поскольку смысл содержимого такого фрейма неизвестен, функция просто переставляет файловый указатель в начало некст фрейма
+//также применяется для парсинга фрейма PRIV, так как его содержимое тоже неизвестно
+bool binaryfile::parse_unknown_frame()//пока только для v2.4
+{//необходимости парсить весь заголовок нет, хотя впоследствии можно добавить проверку, не выставлены ли неопределённые флаги
+    char buf[4];
+    for (int i = 0;i < 4;++i)
+        buf[i] = getb();
+    pair<bitset<28>,bool> len = synchsafe_handler(buf);
+    if (len.second)
+    {
+        seekg(len.first.to_ulong(),ios::cur);
+        return true;
     }
     else
-    {
-        return byte1.to_ulong();
-    }
+        return false;
 }
+*/

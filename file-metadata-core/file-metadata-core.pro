@@ -18,11 +18,38 @@ PRECOMPILED_HEADER = pch.h
 
 HEADERS += \
         pch.h \
-    handler.h
+    handler.h \
+    new.h \
+    binary.h \
+    v22.h \
+    v23.h \
+    v24.h \
+    v1.h \
+    frame2.h \
+    frame3.h \
+    frame4.h \
+    frames2.h \
+    frames3.h \
+    frames4.h \
+    file-holder.h
 
 SOURCES += \
         main.cpp \
-    handler.cpp
+    handler.cpp \
+    new.cpp \
+    binary.cpp \
+    v22.cpp \
+    v23.cpp \
+    v24.cpp \
+    v1.cpp \
+    frame2.cpp \
+    frame3.cpp \
+    frame4.cpp \
+    garbage.cpp \
+    frames2.cpp \
+    frames3.cpp \
+    frames4.cpp \
+    file-holder.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

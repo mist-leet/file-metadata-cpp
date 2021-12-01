@@ -1,13 +1,10 @@
-#include "pch.h"
-#include "handler.h"
+#include "binary.h"
 using namespace std;
 
 int main(int argc, char *argv[])
 {
+    Binary b("D:/abcd.txt");
 
-    binaryfile file("D:\\mus.mp3");
-
-    file.close();
     cout << "end of code\n";
     return 0;
 }
