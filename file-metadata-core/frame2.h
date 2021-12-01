@@ -1,24 +1,24 @@
 #pragma once
 #include "v22.h"
+#include "frame.h"
 using namespace std;
 
-//класс, от которого будут наследоваться классы для фреймов V2.2, V2.3 и V2.4
-class Binary::V22::Frame2 : public File_holder
+class Frame2 : public Frame
 {
     Frame2(const Frame2 &) = delete;
     Frame2 & operator = (const Frame2 &) = delete;
 
 protected:
-    virtual bool parse_frame_header();
+    Binary::V22 &tag;
 
-    virtual bool parse_frame_data() = 0;
+    virtual bool parse_header() override final;
+
+    virtual bool set_string_encoding() override final;
 
 public:
-    explicit Frame2(Binary::V22 & tag) :
-        File_holder(tag.file, tag.unsynch)
-    {}
+    explicit Frame2(Binary::V22 &);
 
-    virtual bool parse_frame();
+    virtual bool parse() override final;
 
-    virtual ~Frame2();//определить
+    virtual ~Frame2() override;
 };

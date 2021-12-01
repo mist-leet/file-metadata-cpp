@@ -18,7 +18,6 @@ PRECOMPILED_HEADER = pch.h
 
 HEADERS += \
         pch.h \
-    handler.h \
     new.h \
     binary.h \
     v22.h \
@@ -30,12 +29,28 @@ HEADERS += \
     frame4.h \
     frames2.h \
     frames3.h \
-    frames4.h \
-    file-holder.h
+    file-holder.h \
+    tag.h \
+    frame.h \
+    tag34.h \
+    frames4RP.h \
+    frames4SA.h \
+    frames4UEM.h \
+    frames4GCLO.h \
+    frames4text.h \
+    frames4url.h \
+    frame_34.h \
+    parser.h \
+    frames4unknown.h \
+    easy_ptr.h \
+    frame_structs.h \
+    tag_structs.h \
+    file_contents.h \
+    char_conversions.h \
+    file_structs.h
 
 SOURCES += \
         main.cpp \
-    handler.cpp \
     new.cpp \
     binary.cpp \
     v22.cpp \
@@ -48,8 +63,21 @@ SOURCES += \
     garbage.cpp \
     frames2.cpp \
     frames3.cpp \
-    frames4.cpp \
-    file-holder.cpp
+    file-holder.cpp \
+    tag.cpp \
+    frame.cpp \
+    tag34.cpp \
+    frames4RP.cpp \
+    frames4GCLO.cpp \
+    frames4SA.cpp \
+    frames4UEM.cpp \
+    frames4text.cpp \
+    frames4url.cpp \
+    frame_34.cpp \
+    parser.cpp \
+    frames4unknown.cpp \
+    file_contents.cpp \
+    char_conversions.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

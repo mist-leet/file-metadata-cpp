@@ -1,28 +1,30 @@
 #pragma once
 #include "v24.h"
-#include "frame3.h"
+#include "frame_34.h"
 using namespace std;
 
-class Binary::V24::Frame4 : public Binary::V23::Frame3
+class Frame4 : public Frame34
 {
-protected:
-    Group_markers_4 grouping_info;
-
-private:
     Frame4(const Frame4 &) = delete;//ЗАПРЕЩЕНО
     Frame4 & operator = (const Frame4 &) = delete;//ЗАПРЕЩЕНО
 
 protected:
-    virtual bool parse_frame_header() override;
+    Binary::V24 &tag;
 
-    bool set_length();
+    virtual bool parse_header() override;
 
-    virtual bool parse_frame_data() override = 0;
+    virtual bool set_string_encoding() override final;
+
+    uchar get_group_mark() const;
+
+    virtual bool tag_has_content() const override final;
+
+    virtual File_contents & tags_content() const override final;
 
 public:
-    explicit Frame4(Binary::V24 & tag) :
-        Frame3(tag)
-    {}
+    explicit Frame4(Binary::V24 &);
+
+    static bool is_group_or_encr_mark(uchar);
 
     virtual ~Frame4() override;
 };

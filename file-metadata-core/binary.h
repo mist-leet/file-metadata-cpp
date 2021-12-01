@@ -1,83 +1,145 @@
 #pragma once
-#include "new.h"
+#include "frame_structs.h"
+#include "tag_structs.h"
+#include "file_structs.h"
+#include "char_extracting.h"
 using namespace std;
 
-//QFile с необходимыми расширениями
 class Binary : public QFile
 {
-protected:
-    bool finely_opened;
-
-private:
     Binary(const Binary &) = delete;
     Binary& operator = (const Binary &) = delete;
 
+    void one_byte_back_with_no_check();
+
 protected:
-    class V1;
-    friend class V1;
+    bool successfully_opened{false};
+    File_metadata data{};
 
-    class V22;
+    function<bool(char *)> getChar_lambda{
+                                            [this](char * c)
+                                            {
+                                                return this->getChar(c);
+                                            }
+                                         };
 
-    friend class V22;
-
-    class V23;
-    friend class V23;
-
-    class V24;
-    friend class V24;
+    function<void()> one_byte_back_lambda{
+                                            [this]()
+                                            {
+                                                return this->one_byte_back_with_no_check();
+                                            }
+                                         };
 
 public:
-    enum byte_order {little_endian, big_endian, wrong};
+    class V1;
+    class V22;
+    class V23;
+    class V24;
+    //friend class ::Parser;
 
-    explicit Binary(const QString & path) :
-        QFile(path)
-    {
-        finely_opened = open(QIODevice::ReadWrite | QIODevice::ExistingOnly);
-    }
+    explicit Binary(const QString &);
 
-    unsigned char get();
+    Binary();
 
-    unsigned char getb(bool);
+    bool openf(const QString &);
 
-    template<typename T>
-    unsigned char get(T & count)
-    {
-        ++count;
-        return get();
-    }
-
-    template<typename T>
-    unsigned char getb(T & count, bool unsynch)
-    {
-        unsigned char first = get(count);
-        if (unsynch)
-            if (get(count) != 0 || first != 255)
-            {
-                seek(pos() - 1);
-                --count;
-            }
-        return first;
-    }
-
+    /*---<элементарные функции>---*/
     char ch();
 
-    char _ch(bool);
+    uchar get();
 
-    long get_utf8(bool);
+    char uch(bool);
 
-    long get_utf16(bool unsynch, bool big_endian);
+    uchar getb(bool);
 
-    long get_usc2(bool unsynch, bool big_endian);
+    template<typename T>
+    char ch(T &);
 
-    byte_order get_BOM(bool);
+    template<typename T>
+    uchar get(T &);
+
+    template<typename T>
+    char uch(T &, bool);
+
+    template<typename T>
+    uchar getb(T &, bool);
+    /*---</элементарные функции>---*/
+
+    Byte_order get_BOM(bool);
+
+    QString get_iso8859_str(bool, const long long &);
+
+    QString get_utf16_str(bool, Byte_order, const long long &);//не чекает BOM
+
+    QString get_utf8_str(bool, const long long &);
+
+    QString get_ucs2_str(bool, Byte_order, const long long &);//не чекает BOM
+
+    QString get_encoding_dependent_string(bool, String_encoding, const long long &, function<bool()>);
+
+    QByteArray get_raw_bytes(bool, ulong);
 
     operator bool () const;
 
-    Binary & operator << (const string &);
+    const File_metadata & get_data() const;
 
-    Binary & operator << (char);
+    File_metadata & get_data();
 
-    Binary & operator >> (char &);
+    bool parse();
 
-    virtual ~Binary();
+    void display_info(bool) const;
+
+    bool has_info() const;
+
+    void shift(long long = -1);
+
+    void back_from_end(qint64);
+
+    char ch_backwards();
+
+    bool check_for(string);
+
+    Tag_version v2_header();
+
+    ulong parse_v2_footer();//возвращает 0, если футер не найден или некорректен
+
+    void parse_from_start();
+
+    void parse_from_end();
+
+    void parse_v1();
+
+    virtual ~Binary() override;
 };
+
+template<typename T>
+uchar Binary::get(T & count)
+{
+    return ::get(getChar_lambda
+                , count);
+}
+
+template<typename T>
+char Binary::ch(T & count)
+{
+    return ::ch(getChar_lambda
+                , count);
+}
+
+template<typename T>
+uchar Binary::getb(T & count, bool unsynch)
+{
+    return ::getb(getChar_lambda
+                , unsynch
+                , one_byte_back_lambda
+                , count);
+}
+
+template<typename T>
+char Binary::uch(T & count, bool unsynch)
+{
+    return ::uch(getChar_lambda
+                , unsynch
+                , one_byte_back_lambda
+                , count);
+}

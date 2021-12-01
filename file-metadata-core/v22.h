@@ -1,31 +1,98 @@
 #pragma once
-#include "file-holder.h"
+#include "tag.h"
+#include "parser.h"
 using namespace std;
 
-//тег v2.2, от которого будут наследоваться теги v2.3 и v2.3
-class Binary::V22 : public File_holder
+//тег v2.2
+class Binary::V22 : public Tag
 {
+    friend class Parser;
+
     V22 (const V22 & ) = delete;
     V22 & operator = (const V22 &) = delete;
 
-    class Frame2;
-    friend class Binary::V22::Frame2;
-
-    friend class Binary::V23;
-
-    friend class Binary;
+    class userdef_txt;
+    class userdef_url;
+    class unknown_frame;
+    class BUF;
+    class CNT;
+    class COM;
+    class CRA;
+    class CRM;
+    class ETC;
+    class EQU;
+    class GEO;
+    class IPL;
+    class LNK;
+    class MCI;
+    class MLL;
+    class PIC;
+    class POP;
+    class REV;
+    class RVA;
+    class SLT;
+    class STC;
+    class TAL;
+    class TBP;
+    class TCM;
+    class TCO;
+    class TCR;
+    class TDA;
+    class TDY;
+    class TEN;
+    class TFT;
+    class TIM;
+    class TKE;
+    class TLA;
+    class TLE;
+    class TMT;
+    class TOA;
+    class TOF;
+    class TOL;
+    class TOR;
+    class TOT;
+    class TP1;
+    class TP2;
+    class TP3;
+    class TP4;
+    class TPA;
+    class TPB;
+    class TRC;
+    class TRD;
+    class TRK;
+    class TSI;
+    class TSS;
+    class TT1;
+    class TT2;
+    class TT3;
+    class TXT;
+    class TYE;
+    class UFI;
+    class ULT;
+    class WAF;
+    class WAR;
+    class WAS;
+    class WCM;
+    class WCP;
+    class WPB;
 
 protected:
-    virtual bool parse_header();
+    virtual bool parse_header() override final;
 
-    bool set_length();//вызывается только с позиции, с которой в заголовке фрейма идут байты длины
+    virtual bool parse_data() override final;
+
+    virtual string get_frame_id() override final;
 
 public:
-    explicit V22(Binary & file_) ://объект создаётся после проверки значений версии и ревизии
-        File_holder(file_)
-    {}
+    explicit V22(Binary & file_);//объект создаётся после проверки значений версии и ревизии
 
-    virtual bool parse();
+    static bool is_userdef_txt(const char * const);
 
-    virtual ~V22() = default;
+    static bool is_userdef_url(const char * const);
+
+    static bool is_free_frame(const char * const);
+
+    static bool correct_id(const char * const);
+
+    virtual ~V22() override;
 };

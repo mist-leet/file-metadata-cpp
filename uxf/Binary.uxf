@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="11.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>70</x>
+      <y>210</y>
+      <w>830</w>
+      <h>670</h>
+    </coordinates>
+    <panel_attributes>class Binary
+--
+#finely_opened : bool
+#data : File metadata
+--
++Binary(path : const QString &amp;)
++Binary()
+-one_byte_back_with_no_check() : void
++openf(path : const QString &amp;) : bool
++ch() : char
++get() : uchar
++uch(unsynch : bool) : char
++getb(uncynch : bool) : uchar
++ch(count : T &amp;) : char
++get(count : T &amp;) : uchar
++uch(count : T &amp;, unsynch : bool) : char
++getb(count : T &amp;, uncynch : bool) : uchar
++get_BOM(unsynch : bool) : Byte_order
++get_iso8859_str(unsynch: bool, length : const long long &amp;) : QString
++get_utf16_str(unsynch: bool, bo : Byte_order, length : const long long &amp;) : QString
++get_utf8_str(unsynch: bool, length : const long long &amp;) : QString
++get_ucs2_str(unsynch: bool, bo : Byte_order, length : const long long &amp;) : QString
++get_encoding_dependent_string(unsynch: bool, enc : String_encoding, length : const long long &amp;, skip : function&lt;bool()&gt;) : QString
++get_raw_bytes(unsynch: bool, length : ulong) : QByteArray
++operator bool () const
++get_data() const : const File_metadata &amp;
++get_data() : File_metadata &amp;
++parse() : bool
++display_info(console : bool) const : void
++has_info() const : bool
++shift(offset = -1 : long long) : void
++back_from_end(offset : qint64) : void
++ch_backwards() : char
++check_for(value : string) : bool
++v2_header() : Tag_version
++parse_v2_footer() : ulong
++parse_from_start() : void
++parse_from_end() : void
++parse_v1() : void
++~Binary()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>1100</x>
+      <y>210</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>QFile</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>870</x>
+      <y>190</y>
+      <w>250</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>230;30;30;30</additional_attributes>
+  </element>
+</diagram>

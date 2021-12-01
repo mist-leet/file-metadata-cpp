@@ -1,18 +1,20 @@
 #pragma once
-#include "binary.h"
+#include "tag.h"
 using namespace std;
 
-//класс, от которого будет наследоваться тег v1+; этот же класс обабатывает тег v1, в котором указан номер трека
-class Binary::V1
+class Binary::V1 : public File_holder
 {
 protected:
-    Binary & MyFile;
+    virtual bool parse_data() override final;
+
+    virtual bool parse_header() override final;
+
+    QString get_field(int) const;
+
 public:
-    explicit V1(Binary & file) :
-        MyFile(file)
-    {}
+    explicit V1(Binary & f);
 
-    virtual bool parse();
+    virtual bool parse() override final;
 
-    virtual ~V1() = default;
+    virtual ~V1() override;
 };

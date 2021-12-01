@@ -1,41 +1,106 @@
 #pragma once
-#include "v22.h"
+#include "tag34.h"
+#include "parser.h"
 using namespace std;
 
 //тег v2.3
-class Binary::V23 : public Binary::V22
+class Binary::V23 : public Tag34
 {
-protected:
-    bool experimental_tag;
-    pair<unsigned long, bool> CRC32;
-    unordered_map<unsigned char, string> group_markers;
-    unsigned long size_of_extended_header;
+    friend class Parser;
 
-private:
-    pair<unsigned long, bool> size_of_padding;
+    ulong size_of_padding{0};
+
+    class padding_handler;
+    class userdef_txt;
+    class userdef_url;
+    class unknown_frame;
+    class AENC;
+    class APIC;
+    class COMM;
+    class COMR;
+    class ENCR;
+    class EQUA;
+    class ETCO;
+    class GEOB;
+    class GRID;
+    class IPLS;
+    class LINK;
+    class MCDI;
+    class MLLT;
+    class OWNE;
+    class PRIV;
+    class PCNT;
+    class POPM;
+    class POSS;
+    class RBUF;
+    class RVAD;
+    class RVRB;
+    class SYLT;
+    class SYTC;
+    class TALB;
+    class TBPM;
+    class TCOM;
+    class TCON;
+    class TCOP;
+    class TDAT;
+    class TDLY;
+    class TENC;
+    class TEXT;
+    class TFLT;
+    class TIME;
+    class TIT1;
+    class TIT2;
+    class TIT3;
+    class TKEY;
+    class TLAN;
+    class TLEN;
+    class TMED;
+    class TOAL;
+    class TOFN;
+    class TOLY;
+    class TOPE;
+    class TORY;
+    class TOWN;
+    class TPE1;
+    class TPE2;
+    class TPE3;
+    class TPE4;
+    class TPOS;
+    class TPUB;
+    class TRCK;
+    class TRDA;
+    class TRSN;
+    class TRSO;
+    class TSIZ;
+    class TSRC;
+    class TSSE;
+    class TYER;
+    class UFID;
+    class USER;
+    class USLT;
+    class WCOM;
+    class WCOP;
+    class WOAF;
+    class WOAR;
+    class WOAS;
+    class WORS;
+    class WPAY;
+    class WPUB;
 
     V23 (const V23 & ) = delete ;
     V23 & operator = (const V23 &) = delete ;
 
-    class Frame3;
-    friend class Frame3;
-
-    friend class Binary::V24;
-
 protected:
-    virtual bool parse_extended_header();
+    virtual bool parse_extended_header() override final;
 
-    virtual bool parse_header() override;
+    virtual bool parse_header() override final;
+
+    virtual bool parse_data() override final;
+
 public:
-    explicit V23(Binary & file) :
-        V22(file),
-        experimental_tag(false),
-        CRC32(make_pair(0,false)),
-        size_of_extended_header(0),
-        size_of_padding(make_pair(0,false))
-    {}
+    explicit V23(Binary &);//объект создаётся после проверки значений версии и ревизии
 
-    virtual bool parse() override;
+    static bool is_userdef_txt(const char *const);
 
-    virtual ~V23() override = default;
+    virtual ~V23() override;
 };
