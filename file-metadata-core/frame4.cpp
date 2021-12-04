@@ -74,7 +74,7 @@ bool Frame4::parseHeader() {
 
     dataLength -= extra_data_size;
 
-    qDebug() << "Frame4: successfully parsed header, length is" << length << endl;
+    qDebug() << "Frame4: successfully parsed header, length is" << length;
     return true;
 }
 

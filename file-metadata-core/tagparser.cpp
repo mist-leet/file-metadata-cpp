@@ -14,22 +14,22 @@ TagParser::TagParser(Binary &file)
 TagParser::TagParser(TagVersion version, Binary &file) {
     switch (version) {
     case two:{
-        qDebug() << "TagParser: set v2" << endl;
+        qDebug() << "TagParser: set v2";
         tag = new(nothrow) Binary::V22(file);
         return;
     }
     case three:{
-        qDebug() << "TagParser: set v3" << endl;
+        qDebug() << "TagParser: set v3";
         tag = new(nothrow) Binary::V23(file);
         return;
     }
     case four:{
-        qDebug() << "TagParser: set v4" << endl;
+        qDebug() << "TagParser: set v4";
         tag = new(nothrow) Binary::V24(file);
         return;
     }
     case noTag:{
-        qDebug() << "TagParser: got noTag, nothing is set" << endl;
+        qDebug() << "TagParser: got noTag, nothing is set";
         return;
     }
     }
@@ -37,9 +37,9 @@ TagParser::TagParser(TagVersion version, Binary &file) {
 
 ParsingResult TagParser::parse() const {
     if (tag) {
-        qDebug() << "TagParser: starting parsing" << endl;
+        qDebug() << "TagParser: starting parsing";
         bool fine = tag->parse();
-        qDebug() << "TagParser: ended parsing" << endl;
+        qDebug() << "TagParser: ended parsing";
         if (fine)
             return success;
         else

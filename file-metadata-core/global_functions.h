@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "global_constants.h"
 
 namespace Gl {

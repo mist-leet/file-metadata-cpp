@@ -54,7 +54,12 @@ void FileHolder::setLength(const uchar *bytes) {
         factor = 256;
 
     for (int i = 3;i >= 0;--i)
-        length += static_cast<ulong>(bytes[i])*power(factor,i);
+        length += bytes[i]*Gl::power(factor,i);
+}
+
+char FileHolder::ch(ulong &count) const {
+    return file.ch(count);
+}
 
 uchar FileHolder::get(ulong &count) const {
     return file.get(count);
@@ -105,7 +110,7 @@ void FileHolder::shift(long long offset) const {
 }
 
 bool FileHolder::parse() {
-    qDebug() << "FileHolder: starting to parse" << endl;
+    qDebug() << "FileHolder: starting to parse";
     if (parseHeader())
         return parseData();
     else

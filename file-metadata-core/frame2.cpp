@@ -10,13 +10,13 @@ Frame2::Frame2(Binary::V22 &t)
 Frame2::~Frame2() = default;
 
 bool Frame2::parse() {
-    qDebug() << "Frame2: starting to parse" << endl;
+    qDebug() << "Frame2: starting to parse";
     parseHeader();
     return parseData();
 }
 
 bool Frame2::parseHeader() {
-    qDebug() << "Frame2: starting to parse header" << endl;
+    qDebug() << "Frame2: starting to parse header";
     endPosition = startPosition + 3 + setLength([this](ulong &count) {
                                                             return this->getb(count);
                                                         })
@@ -31,11 +31,11 @@ QString Frame2::getEncodingDependentString() const {
 }
 
 QString Frame2::getEncodingDependentString(ulong len) const {
-    qDebug() << "Frame2: getting encoding dependent for V 2 string with length" << len << endl;
+    qDebug() << "Frame2: getting encoding dependent for V 2 string with length" << len;
     return FileHolder::getEncodingDependentString(two, len);
 }
 
 QList<QString> Frame2::getList(ulong len, QChar separator) const {
-    qDebug() << "Frame2: getting list for V 2 with length" << len << "and deliminator" << separator << endl;
+    qDebug() << "Frame2: getting list for V 2 with length" << len << "and deliminator" << separator;
     return FileHolder::getList(len, two, separator);
 }

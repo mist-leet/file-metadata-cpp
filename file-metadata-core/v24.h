@@ -23,9 +23,9 @@ protected:
     bool setRestrictions();
 
 public:
-    explicit V24(Binary & file);//объект создаётся после проверки значений версии и ревизии
+    explicit V24(Binary &);//объект создаётся после проверки значений версии и ревизии
 
-    static bool is_userdef_txt(const char * const);
+    static bool isUserdefTxt(const char *const);
 
     virtual ~V24() override;
 };

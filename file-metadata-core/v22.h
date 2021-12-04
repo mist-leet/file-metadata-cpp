@@ -16,15 +16,12 @@ protected:
     virtual std::string getFrameId() override final;
 
 public:
-    explicit V22(Binary & file_);//объект создаётся после проверки значений версии и ревизии
+    explicit V22(Binary &);//объект создаётся после проверки значений версии и ревизии
 
-    static bool is_userdef_txt(const char * const);
-
-    static bool is_userdef_url(const char * const);
-
-    static bool is_free_frame(const char * const);
-
-    static bool correct_id(const char * const);
+    static bool isUserdefTxt(const char *const);
+    static bool isUserdefUrl(const char *const);
+    static bool isFreeFrame(const char *const);
+    static bool correctId(const char *const);
 
     virtual ~V22() override;
 };

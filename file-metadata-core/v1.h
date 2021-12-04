@@ -10,7 +10,7 @@ protected:
     QString getField(int) const;
 
 public:
-    explicit V1(Binary & f);
+    explicit V1(Binary &);
 
     virtual bool parse() override final;
 

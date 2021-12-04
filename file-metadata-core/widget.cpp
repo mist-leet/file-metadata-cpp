@@ -35,7 +35,7 @@ void Widget::parseFile(const QString &path) {
         ui->textEdit->clear();
         qDebug() << "Widget: going to show\n";
         b.getData().showOnEdit(ui->textEdit);
-        qDebug() << "Widget: ended showing, num" << _count++ << endl;
+        qDebug() << "Widget: ended showing, num" << _count++;
     }
     else {
         qDebug() << "Widget: can't open file\n";

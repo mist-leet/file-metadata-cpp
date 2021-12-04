@@ -1,7 +1,7 @@
 #include "v23.h"
 
-Binary::V23::V23(Binary &file) :
-    Tag34(file)
+Binary::V23::V23(Binary &f) :
+    Tag34(f)
 {}
 
 Binary::V23::~V23() = default;

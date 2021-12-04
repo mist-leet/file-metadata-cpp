@@ -10,7 +10,7 @@ class Frame3 : public Frame34
 protected:
     Binary::V23 &tag;
 
-    virtual bool parse_header() override final;
+    virtual bool parseHeader() override;
 
     virtual bool tagHasContent() const override final;
     virtual FileContents &tagsContent() const override final;

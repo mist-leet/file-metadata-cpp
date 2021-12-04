@@ -42,7 +42,7 @@ QChar extr::getUtf8(std::function<uchar ()> gc) {
     else {
         result = first.to_ulong();
     }
-    qDebug() << "getUtf8 got" << cutUlong(result) << endl;
+    qDebug() << "getUtf8 got" << cutUlong(result);
     return QChar(cutUlong(result));
 }
 

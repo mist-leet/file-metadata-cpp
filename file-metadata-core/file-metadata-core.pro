@@ -38,7 +38,14 @@ HEADERS += \
     tag_structs.h \
     file_contents.h \
     char_conversions.h \
-    file_structs.h
+    file_structs.h \
+    new_char_extracting.h \
+    tagparser.h \
+    frameparser.h \
+    global_constants.h \
+    widget.h \
+    global_functions.h \
+    debugfile.h
 
 SOURCES += \
         main.cpp \

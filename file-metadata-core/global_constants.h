@@ -11,8 +11,8 @@ extern constexpr bool anyInt = std::is_same<T, qint16>::value || std::is_same<T,
     std::is_same<T, quint16>::value || std::is_same<T, quint32>::value || std::is_same<T, quint64>::value ||
     std::is_same<T, long>::value || std::is_same<T, ulong>::value;
 
-extern constexpr int v1Len = 128;
-extern constexpr int headerLen = 10;
+constexpr int v1Len = 128;
+constexpr int headerLen = 10;
 
 enum ByteOrder {littleEndian, bigEndian, none};
 enum StringEncoding {iso_8859_1, ucs_2be, ucs_2le, utf_16be, utf_16le, utf_8, notGiven};

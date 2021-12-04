@@ -12,29 +12,11 @@ long long Gl::power(long long num, int pow) {
     }
 }
 
-ushort cutUlong(ulong code)
-{
-    if (code > 65535)//2^16 - 1
-        return 65533;//возвращает заменяющий символ если переданный символ нельзя представить 16 битами
-    else
-        return static_cast<ushort>(code);
-}
-
-QByteArray qUncompressWrapper(const QByteArray &raw_data, ulong expected_size)
-{
-    QByteArray copy(raw_data);
-    char expected_size_storage[4];
-    valueToBits(expected_size_storage,expected_size);
-    copy.prepend(expected_size_storage,4);
-    return qUncompress(copy);
-}
-
-QByteArray qUncompressWrapper(QByteArray &&raw_data, ulong expected_size)
-{
-    char expected_size_storage[4];
-    valueToBits(expected_size_storage,expected_size);
-    raw_data.prepend(expected_size_storage,4);
-    return qUncompress(raw_data);
+bool Gl::isNull(const char *const ptr) {
+    for (int i = 0;i < 5;++i)
+        if (ptr[i])
+            return false;
+    return true;
 }
 
 uint Gl::toUint(const QString &s) {
@@ -43,4 +25,27 @@ uint Gl::toUint(const QString &s) {
         if (s[i].isDigit())
             a += s[i].unicode()*power(10,i);
     return a;
+}
+
+vector<uchar> Gl::uncompressWrapper(const vector<uchar> &rawData, ulong expectedSize) {
+    std::unique_ptr<uchar []> uncompressedData(new(std::nothrow) uchar[expectedSize]);
+    if (uncompressedData.get()) {
+        if (uncompress(uncompressedData.get(),&expectedSize,rawData.data(),rawData.size()) == Z_OK) {
+            vector<uchar> v{};
+            v.reserve(expectedSize);
+            for (ulong i = 0;i < expectedSize;++i) {
+                v.push_back(uncompressedData[i]);
+            }
+            return v;
+        }
+    }
+    return vector<uchar>{};
+}
+
+ulong Gl::mbyte(ulong k) {
+    return k*1024*1024;
+}
+
+ulong Gl::kbyte(ulong k) {
+    return k*1024;
 }

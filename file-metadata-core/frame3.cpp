@@ -17,7 +17,7 @@ bool Frame3::parseHeader() {
     ulong number_of_length_bytes = setLength([this](ulong &count) {
                                                 return this->getb(count);
                                             });
-    qDebug() << "Frame3: length is set, length =" << length << endl;
+    qDebug() << "Frame3: length is set, length =" << length;
     ulong extra_data_size = 0, number_of_flag_bytes = 0;
 
     dataLength = length;
@@ -41,31 +41,19 @@ bool Frame3::parseHeader() {
         for (int i = 3;i >= 0;--i)
             uncompressedSize += static_cast<unsigned long>(getb(extra_data_size))*Gl::power(256,i);
 
-    frameFormat.encryption = format.test(6);
-    if (frameFormat.encryption)
-    {
-        uchar mark = getb(extra_data_size);
-        if (Frame3::is_group_or_encr_mark(mark))
-        {
-            frame_format.encryption_method_marker = mark;
-            frame_format.encryption = true;
-        }
+    bool encryption = format.test(6);
+    if (encryption) {
+        qDebug() << "Frame3: current frame is encrypted and thus unreadable\n";
+        getb();
+        unreadable = true;
     }
 
-    frameFormat.groupIdPresence = format.test(5);
-    if (frameFormat.groupIdPresence)
-    {
-        uchar mark = getb(extra_data_size);
-        if (Frame3::is_group_or_encr_mark(mark))
-        {
-            frame_format.group_id = mark;
-            frame_format.group_id_presence = true;
-        }
-    }
+    if (format.test(5))
+        getb();//group ID вообще не интересует
 
     dataLength -= extra_data_size;
 
-    qDebug() << "Frame3: header is successfully parsed, length is" << length << endl;
+    qDebug() << "Frame3: header is successfully parsed, length is" << length;
     return true;
 }
 

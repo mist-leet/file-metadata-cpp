@@ -9,7 +9,7 @@ bool Frames_4::UnknownFrame::parseHeader() {
         return false;
     else {
         endPosition = startPosition + 10 + length;//в 4 версии гарантируется, что хедер занимает 10 байт
-        qDebug() << "Frame4: header parsed successfully, length is" << length << endl;
+        qDebug() << "Frame4: header parsed successfully, length is" << length;
         return true;
     }
 }

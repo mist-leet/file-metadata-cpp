@@ -1,6 +1,6 @@
 #include "v22.h"
 
-Binary::V22::V22(Binary & f) :
+Binary::V22::V22(Binary &f) :
     Tag(f)
 {}
 
