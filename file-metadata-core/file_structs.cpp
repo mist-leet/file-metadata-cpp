@@ -1,4 +1,5 @@
 #include "file_structs.h"
+#include <QLabel>
 
 GeneralInfo::GeneralInfo()
 {}
@@ -17,23 +18,24 @@ bool FileMetadata::hasInfo() const {//нужно поддерживать в а�
             !commercial.isEmpty() || !ufids.isEmpty() || isrc[12] || !languages.isEmpty() || !generalInfo.isEmpty();
 }
 
-void FileMetadata::showOnEdit(QTextEdit *te) const {
+void FileMetadata::showOnEdit(QVBoxLayout *layout) const {
     for (auto i = textFields.constBegin();i != textFields.constEnd();++i) {
-        te->append(i.key());
-        te->insertPlainText(": ");
-        te->insertPlainText(i.value());
+        QString text = i.key() + ": " + i.value();
+        QLabel *label = new QLabel(text);
+        layout->addWidget(label);
     }
 
-    te->append("Title: ");
-    te->insertPlainText(generalInfo.title);
+    QString text = "Title: " + generalInfo.title;
+    QLabel *label = new QLabel(text);
+    layout->addWidget(label);
 
-    te->append("Performer: ");
-    te->insertPlainText(generalInfo.performer);
+    QString text1 = "Performer: " + generalInfo.performer;
+    QLabel *label1 = new QLabel(text1);
+    layout->addWidget(label1);
 
-    te->append("Album: ");
-    te->insertPlainText(generalInfo.album);
-
-    te->append("");
+    QString text2 = "Album: " + generalInfo.album;
+    QLabel *label2 = new QLabel(text2);
+    layout->addWidget(label2);
 }
 
 FileMetadata::FileMetadata() {

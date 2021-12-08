@@ -1,18 +1,40 @@
 #include "widget.h"
 #include "ui_widget.h"
 
-Widget::Widget(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::Widget1)
+namespace {
+void clearLayout(QLayout* layout, bool deleteWidgets = true)
 {
-    ui->setupUi(this);
+    while (QLayoutItem* item = layout->takeAt(0))
+    {
+        if (deleteWidgets)
+        {
+            if (QWidget* widget = item->widget())
+                widget->deleteLater();
+        }
+        if (QLayout* childLayout = item->layout())
+            clearLayout(childLayout, deleteWidgets);
+        delete item;
+    }
+}
+} // namespace anonymous
+
+Widget::Widget(QWidget *parent)
+    : QWidget(parent)
+    , ui(new Ui::Widget1)
+    , m_pLayout{new QVBoxLayout{this}}
+{
+//    ui->setupUi(this);
     setAcceptDrops(true);
-    ui->textEdit->setPlainText("Перетащите иконку аудиофайла в это поле\n\
-Для успешной работы окно должно быть активным в момент перетаскивания");
+    m_pLayout->setAlignment(Qt::AlignmentFlag::AlignTop);
+    resize(300, 400);
+//    ui->textEdit->setPlainText("Перетащите иконку аудиофайла в это поле\n\
+//Для успешной работы окно должно быть активным в момент перетаскивания");
+
 }
 
 Widget::~Widget() {
     delete ui;
+    m_pLayout->deleteLater();
 }
 
 void Widget::dragEnterEvent(QDragEnterEvent *e) {
@@ -32,9 +54,9 @@ void Widget::parseFile(const QString &path) {
     qDebug() << "Widget: going to parse\n";
     if (b.parse()) {
         qDebug() << "Widget: parsed successfully\n";
-        ui->textEdit->clear();
+        clearLayout(m_pLayout);
         qDebug() << "Widget: going to show\n";
-        b.getData().showOnEdit(ui->textEdit);
+        b.getData().showOnEdit(m_pLayout);
         qDebug() << "Widget: ended showing, num" << _count++;
     }
     else {

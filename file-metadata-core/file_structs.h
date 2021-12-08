@@ -1,5 +1,6 @@
 #pragma once
 #include "global_constants.h"
+#include <QVBoxLayout>
 
 struct GeneralInfo
 {
@@ -34,7 +35,7 @@ struct FileMetadata
 
     bool hasInfo() const;
 
-    void showOnEdit(QTextEdit *) const;
+    void showOnEdit(QVBoxLayout *) const;
 
     bool needsV1() const;
 };

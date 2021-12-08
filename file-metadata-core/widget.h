@@ -1,5 +1,6 @@
 #pragma once
 #include "binary.h"
+#include <QVBoxLayout>
 
 namespace Ui {
 class Widget1;
@@ -20,4 +21,5 @@ public:
 
 private:
     Ui::Widget1 *ui;
+    QVBoxLayout *m_pLayout{nullptr};
 };

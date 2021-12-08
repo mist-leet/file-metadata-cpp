@@ -78,8 +78,6 @@ SOURCES += \
     global_functions.cpp \
     debugfile.cpp
 
-FORMS += \
-    widget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
