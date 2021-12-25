@@ -3,7 +3,7 @@
 #include <QVBoxLayout>
 
 namespace Ui {
-class Widget1;
+class Widget;
 }
 
 class Widget : public QWidget
@@ -20,6 +20,6 @@ public:
     virtual ~Widget() override;
 
 private:
-    Ui::Widget1 *ui;
+    Ui::Widget *ui;
     QVBoxLayout *m_pLayout{nullptr};
 };

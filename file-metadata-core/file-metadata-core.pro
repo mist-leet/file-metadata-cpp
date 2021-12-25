@@ -1,9 +1,13 @@
-QT += core gui
+QT += core gui quick
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = file-metadata-core
 TEMPLATE = app
+
+CONFIG += qmltypes
+QML_IMPORT_NAME = io.qt.examples.backend
+QML_IMPORT_MAJOR_VERSION = 1
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -15,11 +19,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-CONFIG += c++11
-CONFIG += precompile_header
-PRECOMPILED_HEADER = pch.h
+
+CONFIG += c++17
+#CONFIG += precompile_header
+#PRECOMPILED_HEADER = pch.h
 
 HEADERS += \
+    form.h \
         pch.h \
     binary.h \
     v22.h \
@@ -43,11 +49,11 @@ HEADERS += \
     tagparser.h \
     frameparser.h \
     global_constants.h \
-    widget.h \
     global_functions.h \
     debugfile.h
 
 SOURCES += \
+    form.cpp \
         main.cpp \
     binary.cpp \
     v22.cpp \
@@ -74,7 +80,6 @@ SOURCES += \
     new_char_extracting.cpp \
     tagparser.cpp \
     frameparser.cpp \
-    widget.cpp \
     global_functions.cpp \
     debugfile.cpp
 
@@ -84,3 +89,5 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+FORMS += \
+    form.ui

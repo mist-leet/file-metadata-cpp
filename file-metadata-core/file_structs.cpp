@@ -18,24 +18,19 @@ bool FileMetadata::hasInfo() const {//нужно поддерживать в а�
             !commercial.isEmpty() || !ufids.isEmpty() || isrc[12] || !languages.isEmpty() || !generalInfo.isEmpty();
 }
 
-void FileMetadata::showOnEdit(QVBoxLayout *layout) const {
+QMap<QString, QString> FileMetadata::showOnEdit() const {
+    QMap<QString, QString> data = {};
+
     for (auto i = textFields.constBegin();i != textFields.constEnd();++i) {
         QString text = i.key() + ": " + i.value();
-        QLabel *label = new QLabel(text);
-        layout->addWidget(label);
+        data.insert(i.key(), i.value());
     }
 
-    QString text = "Title: " + generalInfo.title;
-    QLabel *label = new QLabel(text);
-    layout->addWidget(label);
+    data.insert("Title", generalInfo.title);
+    data.insert("Performer", generalInfo.performer);
+    data.insert("Album", generalInfo.album);
 
-    QString text1 = "Performer: " + generalInfo.performer;
-    QLabel *label1 = new QLabel(text1);
-    layout->addWidget(label1);
-
-    QString text2 = "Album: " + generalInfo.album;
-    QLabel *label2 = new QLabel(text2);
-    layout->addWidget(label2);
+    return data;
 }
 
 FileMetadata::FileMetadata() {

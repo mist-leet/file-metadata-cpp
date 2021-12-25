@@ -1,5 +1,5 @@
 #include "widget.h"
-#include "ui_widget.h"
+#include "ui_form.h"
 
 namespace {
 void clearLayout(QLayout* layout, bool deleteWidgets = true)
@@ -20,7 +20,7 @@ void clearLayout(QLayout* layout, bool deleteWidgets = true)
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::Widget1)
+    , ui(new Ui::Widget)
     , m_pLayout{new QVBoxLayout{this}}
 {
 //    ui->setupUi(this);

@@ -1,8 +1,9 @@
 #include "widget.h"
+#include "form.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
-    Widget widget;
+    Form widget;
     widget.show();
     return app.exec();
 }
